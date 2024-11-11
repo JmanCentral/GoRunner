@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    tools:context=".VerViajeEspecifico">
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/ViewSingleJourney_titleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text="Viaje específico"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="#0f4d8b"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/ViewSingleJourney_journeyImg"
+                android:layout_width="match_parent"
+                android:layout_height="171dp"
+                android:layout_marginTop="48dp"
+                app:layout_constraintTop_toBottomOf="@+id/ViewSingleJourney_titleText"
+                app:srcCompat="@drawable/icono"
+                tools:layout_editor_absoluteX="0dp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            tools:layout_editor_absoluteY="8dp">
+
+            <TextView
+                android:id="@+id/Statistics_distanceToday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="25dp"
+                android:text="0.00 KM/H"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/textView9"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+
+            <TextView
+                android:id="@+id/ViewSingleJourney_ratingText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="68dp"
+                android:text="3"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintBottom_toBottomOf="@+id/tv6"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+
+            <TextView
+                android:id="@+id/ViewSingleJourney_dateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="24dp"
+                android:text="20/01/2020"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/tv"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/Statistics_timeToday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="25dp"
+                android:text="00:00:00"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/ViewSingleJourney_duration"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/Statistics_recordDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="25dp"
+                android:text="0.00 KM"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/tv34"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+
+            <TextView
+                android:id="@+id/ViewSingleJourney_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="25dp"
+                android:text="Tiempo"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView9" />
+
+
+            <TextView
+                android:id="@+id/tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="24dp"
+                android:text="Fecha"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/ViewSingleJourney_duration" />
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="25dp"
+                android:text="Velocidad promedio"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv34" />
+
+            <TextView
+                android:id="@+id/tv34"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="16dp"
+                android:text="Distancia"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="24dp"
+                android:text="Calificación"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/ViewSingleJourney_commentText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="15dp"
+            android:text="Agregar comentarios"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:textColor="#0f4d8b"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/button6"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:onClick="onClickMap"
+            android:padding="8dp"
+            android:text="Ver recorrido en el mapa"
+            android:textColor="#0f4d8b"
+            android:theme="@style/FlatButton" />
+
+        <Button
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:onClick="onClickEdit"
+            android:padding="8dp"
+            android:text="Editar recorrido"
+            android:textColor="#0f4d8b"
+            android:theme="@style/FlatButton"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
