@@ -105,7 +105,7 @@ public class VerViajes extends ListActivity {
                         }
                     }
                     else {
-                        img.setImageDrawable(getResources().getDrawable(R.drawable.runner));
+                        img.setImageDrawable(getResources().getDrawable(R.drawable.icono));
                     }
                 }
             }

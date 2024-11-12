@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="50dp"
         android:layout_marginEnd="8dp"
@@ -26,7 +26,7 @@
         android:layout_marginTop="76dp"
         android:layout_marginEnd="8dp"
         android:background="#094483"
-        android:onClick="onClickRecord"
+        android:onClick="empezarviaje"
         android:text="Empezar viaje"
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -42,7 +42,7 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="8dp"
         android:background="#094483"
-        android:onClick="onClickView"
+        android:onClick="verrecorridos"
         android:text="Ver viajes"
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"

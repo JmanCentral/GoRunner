@@ -215,14 +215,12 @@ public class Localizacion extends Service {
     }
 
     public class LocationServiceBinder extends Binder {
-        // would like to get the distance in km for activity
-        // the activity will keep track of the duration using chronometer
+
         public float getDistance() {
             return Localizacion.this.getDistance();
         }
 
         public double getDuration() {
-            // get duration in seconds
             return Localizacion.this.getDuration();
         }
 

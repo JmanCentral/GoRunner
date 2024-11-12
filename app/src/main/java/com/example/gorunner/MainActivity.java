@@ -16,13 +16,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    public void onClickRecord(View v) {
+    public void empezarviaje(View v) {
 
         Intent journey = new Intent(MainActivity.this, Viajes.class);
         startActivity(journey);
     }
 
-    public void onClickView(View v) {
+    public void verrecorridos(View v) {
 
         Intent view = new Intent(MainActivity.this, VerViajes.class);
         startActivity(view);
