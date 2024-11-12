@@ -80,7 +80,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#0f4d8b"
-        android:onClick="onClickChangeImage"
+        android:onClick="CambiarImagen"
         android:text="Cambiar Imagen"
         android:textColor="#FFFF" />
 
@@ -90,7 +90,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
-        android:onClick="onClickSave"
+        android:onClick="Guardar"
         android:padding="8dp"
         android:text="Guardar recorrido"
         android:textColor="#0f4d8b"

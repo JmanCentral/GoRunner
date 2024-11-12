@@ -17,34 +17,36 @@ import android.widget.TextView;
 import java.io.InputStream;
 
 public class VerViajeEspecifico extends AppCompatActivity {
-    private ImageView journeyImg;
-    private TextView distanceTV;
-    private TextView avgSpeedTV;
-    private TextView timeTV;
-    private TextView dateTV;
-    private TextView ratingTV;
-    private TextView commentTV;
-    private TextView titleTV;
+    private ImageView imagenViaje;
+    private TextView distanciaTV;
+    private TextView velocidadPromedioTV;
+    private TextView tiempoTV;
+    private TextView fechaTV;
+    private TextView calificacionTV;
+    private TextView comentarioTV;
+    private TextView tituloTV;
 
-    private long journeyID;
+    private long idViaje;
 
-    private Handler h = new Handler();
+    private Handler manejador = new Handler();
 
-    // observer is notified when insert or delete in the given URI occurs
-    protected class MyObserver extends ContentObserver {
+    // Observador que se notifica cuando ocurre una inserción o eliminación en la URI dada
+    protected class MiObservador extends ContentObserver {
 
-        public MyObserver(Handler handler) {
+        public MiObservador(Handler handler) {
             super(handler);
         }
+
         @Override
         public void onChange(boolean selfChange) {
             this.onChange(selfChange, null);
         }
+
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            // called when something in the database wrapped by the content provider changes
-            // update the view
-            populateView();
+            // Llamado cuando algo en la base de datos cambia
+            // Actualizar la vista
+            llenarVista();
         }
     }
 
@@ -55,79 +57,79 @@ public class VerViajeEspecifico extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
 
-        journeyImg = findViewById(R.id.ViewSingleJourney_journeyImg);
-        distanceTV = findViewById(R.id.Statistics_recordDistance);
-        avgSpeedTV = findViewById(R.id.Statistics_distanceToday);
-        timeTV     = findViewById(R.id.Statistics_timeToday);
-        dateTV     = findViewById(R.id.ViewSingleJourney_dateText);
-        ratingTV   = findViewById(R.id.ViewSingleJourney_ratingText);
-        commentTV  = findViewById(R.id.ViewSingleJourney_commentText);
-        titleTV    = findViewById(R.id.ViewSingleJourney_titleText);
-        journeyID  = bundle.getLong("journeyID");
+        imagenViaje = findViewById(R.id.ViewSingleJourney_journeyImg);
+        distanciaTV = findViewById(R.id.Statistics_recordDistance);
+        velocidadPromedioTV = findViewById(R.id.Statistics_distanceToday);
+        tiempoTV = findViewById(R.id.Statistics_timeToday);
+        fechaTV = findViewById(R.id.ViewSingleJourney_dateText);
+        calificacionTV = findViewById(R.id.ViewSingleJourney_ratingText);
+        comentarioTV = findViewById(R.id.ViewSingleJourney_commentText);
+        tituloTV = findViewById(R.id.ViewSingleJourney_titleText);
+        idViaje = bundle.getLong("idViaje");
 
-        populateView();
+        llenarVista();
         getContentResolver().registerContentObserver(
-                JornadasObtenidas.ALL_URI, true, new MyObserver(h));
+                JornadasObtenidas.ALL_URI, true, new MiObservador(manejador));
     }
 
-    public void onClickEdit(View v) {
-        // take to activity for editing the fields for this single journey
-        Intent editActivity = new Intent(VerViajeEspecifico.this, EditarCarrera.class);
+    public void Editar(View vista) {
+        // Dirigir a la actividad para editar los campos de este viaje
+        Intent actividadEditar = new Intent(VerViajeEspecifico.this, EditarCarrera.class);
         Bundle b = new Bundle();
-        b.putLong("journeyID", journeyID);
-        editActivity.putExtras(b);
-        startActivity(editActivity);
+        b.putLong("idViaje", idViaje);
+        actividadEditar.putExtras(b);
+        startActivity(actividadEditar);
     }
 
-    public void onClickMap(View v) {
-        // display this journey on a google map activity
-        Intent map = new Intent(VerViajeEspecifico.this, MapsActivity.class);
+    public void Mapa(View vista) {
+        // Mostrar este viaje en una actividad de Google Maps
+        Intent mapa = new Intent(VerViajeEspecifico.this, MapsActivity.class);
         Bundle b = new Bundle();
-        b.putLong("journeyID", journeyID);
-        map.putExtras(b);
-        startActivity(map);
+        b.putLong("idViaje", idViaje);
+        mapa.putExtras(b);
+        startActivity(mapa);
     }
 
-    private void populateView() {
-        // use content provider to load data from the database and display on the text views
+    private void llenarVista() {
+        // Usar el proveedor de contenido para cargar datos de la base de datos y mostrarlos en las vistas de texto
         Cursor c = getContentResolver().query(Uri.withAppendedPath(JornadasObtenidas.JOURNEY_URI,
-                journeyID + ""), null, null, null, null);
+                idViaje + ""), null, null, null, null);
 
-        if(c.moveToFirst()) {
-            double distance = c.getDouble(c.getColumnIndex(JornadasObtenidas.J_distance));
-            long time       = c.getLong(c.getColumnIndex(JornadasObtenidas.J_DURATION));
-            double avgSpeed = 0;
+        if (c.moveToFirst()) {
+            double distancia = c.getDouble(c.getColumnIndex(JornadasObtenidas.J_distance));
+            long tiempo = c.getLong(c.getColumnIndex(JornadasObtenidas.J_DURATION));
+            double velocidadPromedio = 0;
 
-            if(time != 0) {
-                avgSpeed = distance / (time / 3600.0);
+            if (tiempo != 0) {
+                velocidadPromedio = distancia / (tiempo / 3600.0);
             }
 
-            long hours = time / 3600;
-            long minutes = (time % 3600) / 60;
-            long seconds = time % 60;
+            long horas = tiempo / 3600;
+            long minutos = (tiempo % 3600) / 60;
+            long segundos = tiempo % 60;
 
-            distanceTV.setText(String.format("%.2f KM", distance));
-            avgSpeedTV.setText(String.format("%.2f KM/H", avgSpeed));
-            timeTV.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+            distanciaTV.setText(String.format("%.2f KM", distancia));
+            velocidadPromedioTV.setText(String.format("%.2f KM/H", velocidadPromedio));
+            tiempoTV.setText(String.format("%02d:%02d:%02d", horas, minutos, segundos));
 
-            // date will be stored as yyyy-mm-dd, convert to dd-mm-yyyy
-            String date = c.getString(c.getColumnIndex(JornadasObtenidas.J_DATE));
-            String[] dateParts = date.split("-");
-            date = dateParts[2] + "/" + dateParts[1] + "/" + dateParts[0];
+            // La fecha se almacena como yyyy-mm-dd, convertir a dd-mm-yyyy
+            String fecha = c.getString(c.getColumnIndex(JornadasObtenidas.J_DATE));
+            String[] partesFecha = fecha.split("-");
+            fecha = partesFecha[2] + "/" + partesFecha[1] + "/" + partesFecha[0];
 
-            dateTV.setText(date);
-            ratingTV.setText(c.getInt(c.getColumnIndex(JornadasObtenidas.J_RATING)) + "");
-            commentTV.setText(c.getString(c.getColumnIndex(JornadasObtenidas.J_COMMENT)));
-            titleTV.setText(c.getString(c.getColumnIndex(JornadasObtenidas.J_NAME)));
+            fechaTV.setText(fecha);
+            calificacionTV.setText(c.getInt(c.getColumnIndex(JornadasObtenidas.J_RATING)) + "");
+            comentarioTV.setText(c.getString(c.getColumnIndex(JornadasObtenidas.J_COMMENT)));
+            tituloTV.setText(c.getString(c.getColumnIndex(JornadasObtenidas.J_NAME)));
 
-            // if an image has been set by user display it, else default image is displayed
-            String strUri = c.getString(c.getColumnIndex(JornadasObtenidas.J_IMAGE));
-            if(strUri != null) {
+            // Si el usuario ha configurado una imagen, mostrarla; en caso contrario, mostrar la imagen predeterminada
+            String uriStr = c.getString(c.getColumnIndex(JornadasObtenidas.J_IMAGE));
+            if (uriStr != null) {
                 try {
-                    final Uri imageUri = Uri.parse(strUri);
-                    final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                    final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                    journeyImg.setImageBitmap(selectedImage);
+                    final Uri imagenUri = Uri.parse(uriStr);
+                    final InputStream flujoImagen = getContentResolver().openInputStream(imagenUri);
+                    final Bitmap imagenSeleccionada = BitmapFactory.decodeStream(flujoImagen);
+                    imagenViaje.setImageBitmap(imagenSeleccionada);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -135,3 +137,4 @@ public class VerViajeEspecifico extends AppCompatActivity {
         }
     }
 }
+

@@ -1,122 +1,123 @@
 public class VerViajes extends ListActivity {
 
     private CalendarView fecha;
-    private DatePickerDialog.OnDateSetListener escuchaFecha;
+    private DatePickerDialog.OnDateSetListener dateListener;
 
-    private ListView listaViajes;
-    private AdaptadorViaje adaptador;
-    private ArrayList<ItemViaje> nombresViajes;
+    private ListView journeyList;
+    private JourneyAdapter adapter;
+    private ArrayList<JourneyItem> journeyNames;
 
-    /* Clase para almacenar toda la información necesaria para mostrar un elemento de fila de viaje */
-    private class ItemViaje {
-        private String nombre;
-        private String uriStr;
-        private long id;
+    /* Class to store all the information needed to display journey row item */
+    private class JourneyItem {
+        private String name;
+        private String strUri;
+        private long _id;
 
-        public String getNombre() {
-            return nombre;
+        public String getName() {
+            return name;
         }
 
-        public void setNombre(String nombre) {
-            this.nombre = nombre;
+        public void setName(String name) {
+            this.name = name;
         }
 
-        public void setUriStr(String uriStr) {
-            this.uriStr = uriStr;
+        public void setStrUri(String strUri) {
+            this.strUri = strUri;
         }
 
-        public String getUriStr() {
-            return uriStr;
+        public String getStrUri() {
+            return strUri;
         }
 
-        public void setId(long id) {
-            this.id = id;
+        public void set_id(long _id) {
+            this._id = _id;
         }
 
-        public long getId() {
-            return id;
+        public long get_id() {
+            return _id;
         }
     }
 
-    /* ListView debe mostrar el nombre del viaje junto con una imagen personalizada cargada por el usuario */
-    private class AdaptadorViaje extends ArrayAdapter<ItemViaje> {
-        private ArrayList<ItemViaje> items;
+    /* ListView should display journey name along side a custom image uploaded by the user */
+    private class JourneyAdapter extends ArrayAdapter<JourneyItem> {
+        //
+        private ArrayList<JourneyItem> items;
 
-        public AdaptadorViaje(Context contexto, int recursoTextoVista, ArrayList<ItemViaje> items) {
-            super(contexto, recursoTextoVista, items);
+        public JourneyAdapter(Context context, int textViewResourceId, ArrayList<JourneyItem> items) {
+            super(context, textViewResourceId, items);
             this.items = items;
         }
 
         @Override
-        public View getView(int posicion, View vistaConvertida, ViewGroup padre) {
-            View vista = vistaConvertida;
-            if (vista == null) {
-                LayoutInflater inflador = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                vista = inflador.inflate(R.layout.journeylist, null);
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v = convertView;
+            if (v == null) {
+                LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                v = vi.inflate(R.layout.journeylist, null);
             }
 
-            ItemViaje item = items.get(posicion);
+            JourneyItem item = items.get(position);
             if (item != null) {
-                TextView texto = vista.findViewById(R.id.singleJourney);
-                ImageView img = vista.findViewById(R.id.journeyList_journeyImg);
-                if (texto != null) {
-                    texto.setText(item.getNombre());
+                TextView text = v.findViewById(R.id.singleJourney);
+                ImageView img = v.findViewById(R.id.journeyList_journeyImg);
+                if (text != null) {
+                    text.setText(item.getName());
                 }
-                if (img != null) {
-                    String uriStr = item.getUriStr();
-                    if (uriStr != null) {
+                if(img != null) {
+                    String strUri = item.getStrUri();
+                    if(strUri != null) {
                         try {
-                            final Uri uriImagen = Uri.parse(uriStr);
-                            final InputStream flujoImagen = getContentResolver().openInputStream(uriImagen);
-                            final Bitmap imagenSeleccionada = BitmapFactory.decodeStream(flujoImagen);
-                            img.setImageBitmap(imagenSeleccionada);
+                            final Uri imageUri = Uri.parse(strUri);
+                            final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                            final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                            img.setImageBitmap(selectedImage);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                    } else {
+                    }
+                    else {
                         img.setImageDrawable(getResources().getDrawable(R.drawable.icono));
                     }
                 }
             }
-            return vista;
+            return v;
         }
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ver_viajes);
 
-        nombresViajes = new ArrayList<ItemViaje>();
-        adaptador = new AdaptadorViaje(this, R.layout.journeylist, nombresViajes);
-        setListAdapter(adaptador);
+        journeyNames = new ArrayList<JourneyItem>();
+        adapter = new JourneyAdapter(this, R.layout.journeylist, journeyNames);
+        setListAdapter(adapter);
 
         fecha = findViewById(R.id.calendarView);
-        listaViajes = getListView();
+        journeyList = getListView();
 
         fecha.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
-            public void onSelectedDayChange(CalendarView vista, int anio, int mes, int diaDelMes) {
-                mes += 1; // los meses empiezan en 0
-                String fechaSeleccionada = String.format("%02d/%02d/%04d", diaDelMes, mes, anio);
-                listarViajes(fechaSeleccionada);
+            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
+                month += 1; // los meses empiezan en 0
+                String date = String.format("%02d/%02d/%04d", dayOfMonth, month, year);
+                listJourneys(date);
             }
         });
 
-        listaViajes.setClickable(true);
-        listaViajes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        journeyList.setClickable(true);
+        journeyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int posicion, long arg3) {
-                ItemViaje viaje = (ItemViaje) listaViajes.getItemAtPosition(posicion);
-                long idViaje = viaje.getId();
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                JourneyItem o = (JourneyItem) journeyList.getItemAtPosition(position);
+                long journeyID = o.get_id();
 
-                // Iniciar la actividad de un viaje específico enviando el idViaje
+                // start the single journey activity sending it the journeyID
                 Bundle b = new Bundle();
-                b.putLong("idViaje", idViaje);
-                Intent verViaje = new Intent(VerViajes.this, VerViajeEspecifico.class);
-                verViaje.putExtras(b);
-                startActivity(verViaje);
+                b.putLong("journeyID", journeyID);
+                Intent singleJourney = new Intent(VerViajes.this, VerViajeEspecifico.class);
+                singleJourney.putExtras(b);
+                startActivity(singleJourney);
             }
         });
     }
@@ -124,57 +125,58 @@ public class VerViajes extends ListActivity {
     @Override
     public void onResume() {
         super.onResume();
-        String fechaSeleccionada = obtenerFechaSeleccionadaDelCalendario();
-        if (fechaSeleccionada != null) {
-            listarViajes(fechaSeleccionada);
+        String selectedDate = getSelectedDateFromCalendar();
+        if (selectedDate != null) {
+            listJourneys(selectedDate);
         }
     }
 
-    private String obtenerFechaSeleccionadaDelCalendario() {
+    private String getSelectedDateFromCalendar() {
         // Puedes utilizar esta función para obtener la fecha actual en formato dd/MM/yyyy si es necesario.
-        Calendar calendario = Calendar.getInstance();
-        calendario.setTimeInMillis(fecha.getDate());
-        int dia = calendario.get(Calendar.DAY_OF_MONTH);
-        int mes = calendario.get(Calendar.MONTH) + 1;
-        int anio = calendario.get(Calendar.YEAR);
-        return String.format("%02d/%02d/%04d", dia, mes, anio);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(fecha.getDate());
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int year = calendar.get(Calendar.YEAR);
+        return String.format("%02d/%02d/%04d", day, month, year);
     }
 
-    /* Consultar la base de datos para obtener todos los viajes en la fecha especificada en formato dd/MM/yyyy y mostrarlos en ListView */
-    private void listarViajes(String fecha) {
-        // El servidor SQLite espera el formato yyyy-MM-dd
-        String[] partesFecha = fecha.split("/");
-        fecha = partesFecha[2] + "-" + partesFecha[1] + "-" + partesFecha[0];
+
+
+    /* Query database to get all journeys in specified date in dd/mm/yyyy format and display them in listview */
+    private void listJourneys(String date) {
+        // sqlite server expects yyyy-mm-dd
+        String[] dateParts = date.split("/");
+        date = dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
+
 
         Cursor c = getContentResolver().query(JornadasObtenidas.JOURNEY_URI,
-                new String[] {JornadasObtenidas.J_ID + " _id", JornadasObtenidas.J_NAME, JornadasObtenidas.J_IMAGE},
-                JornadasObtenidas.J_DATE + " = ?", new String[] {fecha}, JornadasObtenidas.J_NAME + " ASC");
+                new String[] {JornadasObtenidas.J_ID + " _id", JornadasObtenidas.J_NAME, JornadasObtenidas.J_IMAGE}, JornadasObtenidas.J_DATE + " = ?", new String[] {date}, JornadasObtenidas.J_NAME + " ASC");
 
-        Log.d("mdp", "Viajes cargados: " + c.getCount());
+        Log.d("mdp", "Journeys Loaded: " + c.getCount());
 
-        // Poner los elementos del cursor en ArrayList y agregarlos al adaptador
-        nombresViajes = new ArrayList<ItemViaje>();
-        adaptador.notifyDataSetChanged();
-        adaptador.clear();
-        adaptador.notifyDataSetChanged();
+        // put cursor items into ArrayList and add those items to the adapter
+        journeyNames = new ArrayList<JourneyItem>();
+        adapter.notifyDataSetChanged();
+        adapter.clear();
+        adapter.notifyDataSetChanged();
         try {
             while(c.moveToNext()) {
-                ItemViaje item = new ItemViaje();
-                item.setNombre(c.getString(c.getColumnIndex(JornadasObtenidas.J_NAME)));
-                item.setUriStr(c.getString(c.getColumnIndex(JornadasObtenidas.J_IMAGE)));
-                item.setId(c.getLong(c.getColumnIndex("_id")));
-                nombresViajes.add(item);
+                JourneyItem i = new JourneyItem();
+                i.setName(c.getString(c.getColumnIndex(JornadasObtenidas.J_NAME)));
+                i.setStrUri(c.getString(c.getColumnIndex(JornadasObtenidas.J_IMAGE)));
+                i.set_id(c.getLong(c.getColumnIndex("_id")));
+                journeyNames.add(i);
             }
         } finally {
-            if(nombresViajes != null && nombresViajes.size() > 0) {
-                adaptador.notifyDataSetChanged();
-                for(int i = 0; i < nombresViajes.size(); i++) {
-                    adaptador.add(nombresViajes.get(i));
+            if(journeyNames != null && journeyNames.size() > 0) {
+                adapter.notifyDataSetChanged();
+                for(int i = 0; i < journeyNames.size(); i++) {
+                    adapter.add(journeyNames.get(i));
                 }
             }
             c.close();
-            adaptador.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
         }
     }
-
 }

@@ -13,72 +13,58 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-/* Page to display journey of a user on the map */
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    private GoogleMap mMap;
-    private long journeyID;
+    private GoogleMap mapa;
+    private long idViaje;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        // Obtener el SupportMapFragment y notificar cuando el mapa esté listo para usarse.
+        SupportMapFragment fragmentoMapa = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        fragmentoMapa.getMapAsync(this);
 
         Bundle bundle = getIntent().getExtras();
-        journeyID = bundle.getLong("journeyID");
+        idViaje = bundle.getLong("idViaje");
     }
 
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
+        mapa = googleMap;
 
-        // draw polyline
-        Cursor c = getContentResolver().query(JornadasObtenidas.LOCATION_URI,
-                null, JornadasObtenidas.L_JID + " = " + journeyID, null, null);
+        // Dibujar polilínea
+        Cursor cursor = getContentResolver().query(JornadasObtenidas.LOCATION_URI,
+                null, JornadasObtenidas.L_JID + " = " + idViaje, null, null);
 
-        PolylineOptions line = new PolylineOptions().clickable(false);
-        LatLng firstLoc = null;
-        LatLng lastLoc = null;
+        PolylineOptions linea = new PolylineOptions().clickable(false);
+        LatLng primeraLoc = null;
+        LatLng ultimaLoc = null;
         try {
-            while(c.moveToNext()) {
-                LatLng loc = new LatLng(c.getDouble(c.getColumnIndex(JornadasObtenidas.L_LATITUDE)),
-                        c.getDouble(c.getColumnIndex(JornadasObtenidas.L_LONGITUDE)));
-                if(c.isFirst()) {
-                    firstLoc = loc;
+            while(cursor.moveToNext()) {
+                LatLng loc = new LatLng(cursor.getDouble(cursor.getColumnIndex(JornadasObtenidas.L_LATITUDE)),
+                        cursor.getDouble(cursor.getColumnIndex(JornadasObtenidas.L_LONGITUDE)));
+                if(cursor.isFirst()) {
+                    primeraLoc = loc;
                 }
-                if(c.isLast()) {
-                    lastLoc = loc;
+                if(cursor.isLast()) {
+                    ultimaLoc = loc;
                 }
-                line.add(loc);
+                linea.add(loc);
             }
         } finally {
-            c.close();
+            cursor.close();
         }
 
         float zoom = 15.0f;
-        if(lastLoc != null && firstLoc != null) {
-            mMap.addMarker(new MarkerOptions().position(firstLoc).title("Start"));
-            mMap.addMarker(new MarkerOptions().position(lastLoc).title("End"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(firstLoc, zoom));
+        if(ultimaLoc != null && primeraLoc != null) {
+            mapa.addMarker(new MarkerOptions().position(primeraLoc).title("Inicio"));
+            mapa.addMarker(new MarkerOptions().position(ultimaLoc).title("Fin"));
+            mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(primeraLoc, zoom));
         }
-        mMap.addPolyline(line);
+        mapa.addPolyline(linea);
     }
-
-
-
-
 }

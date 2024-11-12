@@ -26,16 +26,16 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class EditarCarrera extends AppCompatActivity {
-    private final int RESULT_LOAD_IMG = 1;
-    private final int REQUEST_IMAGE_CAPTURE = 2;
-    private final int REQUEST_CAMERA_PERMISSION = 100;
-    private ImageView journeyImg;
-    private EditText titleET;
-    private EditText commentET;
-    private EditText ratingET;
-    private long journeyID;
+    private final int RESULTADO_CARGAR_IMAGEN = 1;
+    private final int SOLICITUD_CAPTURAR_IMAGEN = 2;
+    private final int SOLICITUD_PERMISO_CAMARA = 100;
+    private ImageView imagenViaje;
+    private EditText tituloET;
+    private EditText comentarioET;
+    private EditText calificacionET;
+    private long idViaje;
 
-    private Uri selectedJourneyImg;
+    private Uri imagenSeleccionadaViaje;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,136 +44,134 @@ public class EditarCarrera extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
 
-        journeyImg = findViewById(R.id.journeyImg);
-        titleET = findViewById(R.id.titleEditText);
-        commentET = findViewById(R.id.commentEditText);
-        ratingET = findViewById(R.id.ratingEditText);
-        journeyID = bundle.getLong("journeyID");
+        imagenViaje = findViewById(R.id.journeyImg);
+        tituloET = findViewById(R.id.titleEditText);
+        comentarioET = findViewById(R.id.commentEditText);
+        calificacionET = findViewById(R.id.ratingEditText);
+        idViaje = bundle.getLong("idViaje");
 
-        selectedJourneyImg = null;
+        imagenSeleccionadaViaje = null;
 
-        populateEditText();
+        llenarCamposEdicion();
     }
 
-    /* Save the new title, comment, image and rating to the DB */
-    public void onClickSave(View v) {
-        int rating = checkRating(ratingET);
-        if(rating == -1) {
+    /* Guardar el nuevo título, comentario, imagen y calificación en la base de datos */
+    public void Guardar(View v) {
+        int calificacion = verificarCalificacion(calificacionET);
+        if(calificacion == -1) {
             return;
         }
 
-        Uri rowQueryUri = Uri.withAppendedPath(JornadasObtenidas.JOURNEY_URI, "" + journeyID);
+        Uri uriConsultaFila = Uri.withAppendedPath(JornadasObtenidas.JOURNEY_URI, "" + idViaje);
 
-        ContentValues cv = new ContentValues();
-        cv.put(JornadasObtenidas.J_RATING, rating);
-        cv.put(JornadasObtenidas.J_COMMENT, commentET.getText().toString());
-        cv.put(JornadasObtenidas.J_NAME, titleET.getText().toString());
+        ContentValues valores = new ContentValues();
+        valores.put(JornadasObtenidas.J_RATING, calificacion);
+        valores.put(JornadasObtenidas.J_COMMENT, comentarioET.getText().toString());
+        valores.put(JornadasObtenidas.J_NAME, tituloET.getText().toString());
 
-        if(selectedJourneyImg != null) {
-            cv.put(JornadasObtenidas.J_IMAGE, selectedJourneyImg.toString());
+        if(imagenSeleccionadaViaje != null) {
+            valores.put(JornadasObtenidas.J_IMAGE, imagenSeleccionadaViaje.toString());
         }
 
-        getContentResolver().update(rowQueryUri, cv, null, null);
+        getContentResolver().update(uriConsultaFila, valores, null, null);
         finish();
     }
 
-    private void checkCameraPermission() {
+    private void verificarPermisoCamara() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA},
-                    REQUEST_CAMERA_PERMISSION);
+                    SOLICITUD_PERMISO_CAMARA);
         } else {
             // Si el permiso ya ha sido concedido, abrir la cámara
-            openCamera();
+            abrirCamara();
         }
     }
 
-    private void openCamera() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+    private void abrirCamara() {
+        Intent intentCapturarImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (intentCapturarImagen.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intentCapturarImagen, SOLICITUD_CAPTURAR_IMAGEN);
         } else {
-            Toast.makeText(this, "Camera not available", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Cámara no disponible", Toast.LENGTH_SHORT).show();
         }
     }
 
 
-    public void onClickChangeImage(View v) {
-        checkCameraPermission();
+    public void CambiarImagen(View v) {
+        verificarPermisoCamara();
     }
 
     @Override
-    protected void onActivityResult(int reqCode, int resultCode, Intent data) {
-        super.onActivityResult(reqCode, resultCode, data);
+    protected void onActivityResult(int codigoSolicitud, int codigoResultado, Intent data) {
+        super.onActivityResult(codigoSolicitud, codigoResultado, data);
 
-        if (resultCode == RESULT_OK) {
-            switch(reqCode) {
-                case RESULT_LOAD_IMG:
+        if (codigoResultado == RESULT_OK) {
+            switch(codigoSolicitud) {
+                case RESULTADO_CARGAR_IMAGEN:
                     if (data != null && data.getData() != null) {
-                        Uri imageUri = data.getData();
+                        Uri uriImagen = data.getData();
                         try {
-                            getContentResolver().takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                            InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                            Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                            journeyImg.setImageBitmap(selectedImage);
-                            selectedJourneyImg = imageUri;
+                            getContentResolver().takePersistableUriPermission(uriImagen, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            InputStream flujoImagen = getContentResolver().openInputStream(uriImagen);
+                            Bitmap imagenSeleccionada = BitmapFactory.decodeStream(flujoImagen);
+                            imagenViaje.setImageBitmap(imagenSeleccionada);
+                            imagenSeleccionadaViaje = uriImagen;
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     } else {
-                        Toast.makeText(this, "You didn't pick an Image", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "No seleccionaste una imagen", Toast.LENGTH_LONG).show();
                     }
                     break;
 
-                case REQUEST_IMAGE_CAPTURE:
+                case SOLICITUD_CAPTURAR_IMAGEN:
                     Bundle extras = data.getExtras();
-                    Bitmap imageBitmap = (Bitmap) extras.get("data");
-                    journeyImg.setImageBitmap(imageBitmap);
+                    Bitmap imagenBitmap = (Bitmap) extras.get("data");
+                    imagenViaje.setImageBitmap(imagenBitmap);
 
                     // Opcional: Guardar el Bitmap en almacenamiento para obtener un URI
-                    selectedJourneyImg = saveImageToStorage(imageBitmap);
+                    imagenSeleccionadaViaje = guardarImagenEnAlmacenamiento(imagenBitmap);
                     break;
             }
         }
     }
 
     // Método para guardar la imagen en almacenamiento y obtener el URI
-    private Uri saveImageToStorage(Bitmap bitmap) {
+    private Uri guardarImagenEnAlmacenamiento(Bitmap bitmap) {
         Uri uri = null;
         try {
-            File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "journey_image_" + journeyID + ".jpg");
-            FileOutputStream fos = new FileOutputStream(file);
+            File archivo = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "imagen_viaje_" + idViaje + ".jpg");
+            FileOutputStream fos = new FileOutputStream(archivo);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
             fos.flush();
             fos.close();
-            uri = Uri.fromFile(file);
+            uri = Uri.fromFile(archivo);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return uri;
     }
 
+    /* Asigna a los EditTexts el texto inicial desde la base de datos */
+    private void llenarCamposEdicion() {
+        Cursor cursor = getContentResolver().query(Uri.withAppendedPath(JornadasObtenidas.JOURNEY_URI, idViaje + ""), null, null, null, null);
 
-    /* Give the edit texts some initial text from what they were, get this by accessing DB */
-    private void populateEditText() {
-        Cursor c = getContentResolver().query(Uri.withAppendedPath(JornadasObtenidas.JOURNEY_URI,
-                journeyID + ""), null, null, null, null);
+        if(cursor.moveToFirst()) {
+            tituloET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.J_NAME)));
+            comentarioET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.J_COMMENT)));
+            calificacionET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.J_RATING)));
 
-        if(c.moveToFirst()) {
-            titleET.setText(c.getString(c.getColumnIndex(JornadasObtenidas.J_NAME)));
-            commentET.setText(c.getString(c.getColumnIndex(JornadasObtenidas.J_COMMENT)));
-            ratingET.setText(c.getString(c.getColumnIndex(JornadasObtenidas.J_RATING)));
-
-            // if an image has been set by user display it, else default image is displayed
-            String strUri = c.getString(c.getColumnIndex(JornadasObtenidas.J_IMAGE));
+            // Si el usuario ha configurado una imagen, mostrarla; de lo contrario, se muestra la imagen predeterminada
+            String strUri = cursor.getString(cursor.getColumnIndex(JornadasObtenidas.J_IMAGE));
             if(strUri != null) {
                 try {
-                    final Uri imageUri = Uri.parse(strUri);
-                    final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                    final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                    journeyImg.setImageBitmap(selectedImage);
+                    final Uri uriImagen = Uri.parse(strUri);
+                    final InputStream flujoImagen = getContentResolver().openInputStream(uriImagen);
+                    final Bitmap imagenSeleccionada = BitmapFactory.decodeStream(flujoImagen);
+                    imagenViaje.setImageBitmap(imagenSeleccionada);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -181,21 +179,19 @@ public class EditarCarrera extends AppCompatActivity {
         }
     }
 
-    /* Ensure a rating is between 1-5 */
-    private int checkRating(EditText newRating) {
-        int rating;
+    private int verificarCalificacion(EditText nuevaCalificacion) {
+        int calificacion;
         try {
-            rating = Integer.parseInt(newRating.getText().toString());
+            calificacion = Integer.parseInt(nuevaCalificacion.getText().toString());
         } catch(Exception e) {
-            Log.d("mdp", "The following is not a number: " + newRating.getText().toString());
+            Toast.makeText(getApplicationContext(), "Lo siguiente no es un número: " + nuevaCalificacion.getText().toString(), Toast.LENGTH_SHORT).show();
             return -1;
         }
 
-        if(rating < 0 || rating > 5) {
-            Log.d("mdp", "Rating must be between 0-5");
+        if(calificacion < 0 || calificacion > 5) {
+            Toast.makeText(getApplicationContext(), "La calificación debe estar entre 0 y 5", Toast.LENGTH_SHORT).show();
             return -1;
         }
-        return rating;
+        return calificacion;
     }
-
 }
