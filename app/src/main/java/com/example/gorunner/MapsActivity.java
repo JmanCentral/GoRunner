@@ -38,7 +38,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Dibujar polilínea
         Cursor cursor = getContentResolver().query(JornadasObtenidas.uriUbicacion,
-                null, JornadasObtenidas.uriUbicacion + " = " + idViaje, null, null);
+                null, JornadasObtenidas.jornadaId + " = " + idViaje, null, null);
 
         PolylineOptions linea = new PolylineOptions().clickable(false);
         LatLng primeraLoc = null;
