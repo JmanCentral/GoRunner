@@ -157,21 +157,21 @@ public class Localizacion extends Service {
     protected void saveJourney() {
         // save journey to database using content provider
         ContentValues journeyData = new ContentValues();
-        journeyData.put(JornadasObtenidas.J_distance, getDistance());
-        journeyData.put(JornadasObtenidas.J_DURATION, (long) getDuration());
-        journeyData.put(JornadasObtenidas.J_DATE, getDateTime());
+        journeyData.put(JornadasObtenidas.distancia_jornada, getDistance());
+        journeyData.put(JornadasObtenidas.duracion_jornada, (long) getDuration());
+        journeyData.put(JornadasObtenidas.fecha_jornada, getDateTime());
 
-        long journeyID = Long.parseLong(getContentResolver().insert(JornadasObtenidas.JOURNEY_URI, journeyData).getLastPathSegment());
+        long jornadaID = Long.parseLong(getContentResolver().insert(JornadasObtenidas.uriJornada, journeyData).getLastPathSegment());
 
         // for each location belonging to this journey save it to the location table linked to this journey
         for(Location location : locationListener.getLocations()) {
             ContentValues locationData = new ContentValues();
-            locationData.put(JornadasObtenidas.L_JID, journeyID);
-            locationData.put(JornadasObtenidas.L_ALTITUDE, location.getAltitude());
-            locationData.put(JornadasObtenidas.L_LATITUDE, location.getLatitude());
-            locationData.put(JornadasObtenidas.L_LONGITUDE, location.getLongitude());
+            locationData.put(JornadasObtenidas.jornadaId, jornadaID);
+            locationData.put(JornadasObtenidas.altitud_jornada, location.getAltitude());
+            locationData.put(JornadasObtenidas.latitud_jornada, location.getLatitude());
+            locationData.put(JornadasObtenidas.longitud_jornada, location.getLongitude());
 
-            getContentResolver().insert(JornadasObtenidas.LOCATION_URI, locationData);
+            getContentResolver().insert(JornadasObtenidas.uriUbicacion, locationData);
         }
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -183,7 +183,7 @@ public class Localizacion extends Service {
         startTime = 0;
         locationListener.newJourney();
 
-        Log.d("mdp", "Journey saved with id = " + journeyID);
+        Log.d("mdp", "Journey saved with id = " + jornadaID);
     }
 
     protected void changeGPSRequestFrequency(int time, int dist) {

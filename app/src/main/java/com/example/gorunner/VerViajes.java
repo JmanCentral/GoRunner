@@ -175,9 +175,9 @@ public class VerViajes extends ListActivity {
         String[] partesFecha = fecha.split("/");
         fecha = partesFecha[2] + "-" + partesFecha[1] + "-" + partesFecha[0];
 
-        Cursor c = getContentResolver().query(JornadasObtenidas.JOURNEY_URI,
-                new String[] {JornadasObtenidas.J_ID + " _id", JornadasObtenidas.J_NAME, JornadasObtenidas.J_IMAGE},
-                JornadasObtenidas.J_DATE + " = ?", new String[] {fecha}, JornadasObtenidas.J_NAME + " ASC");
+        Cursor c = getContentResolver().query(JornadasObtenidas.uriJornada,
+                new String[] {JornadasObtenidas.id_jornada + " _id", JornadasObtenidas.nombre_jornada, JornadasObtenidas.imagen_jornada},
+                JornadasObtenidas.fecha_jornada + " = ?", new String[] {fecha}, JornadasObtenidas.nombre_jornada + " ASC");
 
         Log.d("mdp", "Viajes cargados: " + c.getCount());
 
@@ -189,8 +189,8 @@ public class VerViajes extends ListActivity {
         try {
             while(c.moveToNext()) {
                 ItemViaje item = new ItemViaje();
-                item.setNombre(c.getString(c.getColumnIndex(JornadasObtenidas.J_NAME)));
-                item.setUriStr(c.getString(c.getColumnIndex(JornadasObtenidas.J_IMAGE)));
+                item.setNombre(c.getString(c.getColumnIndex(JornadasObtenidas.nombre_jornada)));
+                item.setUriStr(c.getString(c.getColumnIndex(JornadasObtenidas.imagen_jornada)));
                 item.setId(c.getLong(c.getColumnIndex("_id")));
                 nombresViajes.add(item);
             }

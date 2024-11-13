@@ -18,10 +18,10 @@ public class Jornadas extends ContentProvider {
 
     static {
         matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        matcher.addURI(JornadasObtenidas.AUTHORITY, "journey", 1);
-        matcher.addURI(JornadasObtenidas.AUTHORITY, "journey/#", 2);
-        matcher.addURI(JornadasObtenidas.AUTHORITY, "location", 3);
-        matcher.addURI(JornadasObtenidas.AUTHORITY, "location/#", 4);
+        matcher.addURI(JornadasObtenidas.paquete, "journey", 1);
+        matcher.addURI(JornadasObtenidas.paquete, "journey/#", 2);
+        matcher.addURI(JornadasObtenidas.paquete, "location", 3);
+        matcher.addURI(JornadasObtenidas.paquete, "location/#", 4);
     }
 
     @Override
@@ -75,11 +75,11 @@ public class Jornadas extends ContentProvider {
         switch(matcher.match(uri)) {
             case 2:
                 // gave /# URI so they want a specific row
-                selection = "journeyID = " + uri.getLastPathSegment();
+                selection = "jornadaID = " + uri.getLastPathSegment();
             case 1:
                 return db.query("journey", projection, selection, selectionArgs, null, null, sortOrder);
             case 4:
-                selection = "locationID = " + uri.getLastPathSegment();
+                selection = "ubicacionID = " + uri.getLastPathSegment();
             case 3:
                 return db.query("location", projection, selection, selectionArgs, null, null, sortOrder);
             default:
@@ -97,13 +97,13 @@ public class Jornadas extends ContentProvider {
         switch(matcher.match(uri)) {
             case 2:
                 // gave /# URI so they want a specific row
-                selection = "journeyID = " + uri.getLastPathSegment();
+                selection = "jornadaID = " + uri.getLastPathSegment();
             case 1:
                 tableName = "journey";
                 count = db.update(tableName, values, selection, selectionArgs);
                 break;
             case 4:
-                selection = "locationID = " + uri.getLastPathSegment();
+                selection = "ubicacionID = " + uri.getLastPathSegment();
             case 3:
                 tableName = "location";
                 count = db.update(tableName, values, selection, selectionArgs);
@@ -125,13 +125,13 @@ public class Jornadas extends ContentProvider {
         switch(matcher.match(uri)) {
             case 2:
                 // gave /# URI so they want a specific row
-                selection = "journeyID = " + uri.getLastPathSegment();
+                selection = "jornadaID = " + uri.getLastPathSegment();
             case 1:
                 tableName = "journey";
                 count = db.delete(tableName, selection, selectionArgs);
                 break;
             case 4:
-                selection = "locationID = " + uri.getLastPathSegment();
+                selection = "ubicacionID = " + uri.getLastPathSegment();
             case 3:
                 tableName = "location";
                 count = db.delete(tableName, selection, selectionArgs);

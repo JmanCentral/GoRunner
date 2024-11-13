@@ -62,15 +62,15 @@ public class EditarCarrera extends AppCompatActivity {
             return;
         }
 
-        Uri uriConsultaFila = Uri.withAppendedPath(JornadasObtenidas.JOURNEY_URI, "" + idViaje);
+        Uri uriConsultaFila = Uri.withAppendedPath(JornadasObtenidas.uriJornada, "" + idViaje);
 
         ContentValues valores = new ContentValues();
-        valores.put(JornadasObtenidas.J_RATING, calificacion);
-        valores.put(JornadasObtenidas.J_COMMENT, comentarioET.getText().toString());
-        valores.put(JornadasObtenidas.J_NAME, tituloET.getText().toString());
+        valores.put(JornadasObtenidas.calificacion_jornada, calificacion);
+        valores.put(JornadasObtenidas.comentario_jornada, comentarioET.getText().toString());
+        valores.put(JornadasObtenidas.nombre_jornada, tituloET.getText().toString());
 
         if(imagenSeleccionadaViaje != null) {
-            valores.put(JornadasObtenidas.J_IMAGE, imagenSeleccionadaViaje.toString());
+            valores.put(JornadasObtenidas.imagen_jornada, imagenSeleccionadaViaje.toString());
         }
 
         getContentResolver().update(uriConsultaFila, valores, null, null);
@@ -157,15 +157,15 @@ public class EditarCarrera extends AppCompatActivity {
 
     /* Asigna a los EditTexts el texto inicial desde la base de datos */
     private void llenarCamposEdicion() {
-        Cursor cursor = getContentResolver().query(Uri.withAppendedPath(JornadasObtenidas.JOURNEY_URI, idViaje + ""), null, null, null, null);
+        Cursor cursor = getContentResolver().query(Uri.withAppendedPath(JornadasObtenidas.uriJornada, idViaje + ""), null, null, null, null);
 
         if(cursor.moveToFirst()) {
-            tituloET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.J_NAME)));
-            comentarioET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.J_COMMENT)));
-            calificacionET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.J_RATING)));
+            tituloET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.nombre_jornada)));
+            comentarioET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.comentario_jornada)));
+            calificacionET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.calificacion_jornada)));
 
             // Si el usuario ha configurado una imagen, mostrarla; de lo contrario, se muestra la imagen predeterminada
-            String strUri = cursor.getString(cursor.getColumnIndex(JornadasObtenidas.J_IMAGE));
+            String strUri = cursor.getString(cursor.getColumnIndex(JornadasObtenidas.imagen_jornada));
             if(strUri != null) {
                 try {
                     final Uri uriImagen = Uri.parse(strUri);

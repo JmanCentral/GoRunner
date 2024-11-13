@@ -13,22 +13,22 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE journey (" +
-                "journeyID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
-                "duration BIGINT NOT NULL," +
-                "distance REAL NOT NULL," +
-                "date DATETIME NOT NULL," +
-                "name varchar(256) NOT NULL DEFAULT 'Recorded Journey'," +
-                "rating INTEGER NOT NULL DEFAULT 1," +
-                "comment varchar(256) NOT NULL DEFAULT ''," +
-                "image varchar(256) DEFAULT NULL);");
+                "jornadaID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
+                "duracion BIGINT NOT NULL," +
+                "distancia REAL NOT NULL," +
+                "fecha DATETIME NOT NULL," +
+                "nombre varchar(256) NOT NULL DEFAULT 'Recorded Journey'," +
+                "calificacion INTEGER NOT NULL DEFAULT 1," +
+                "comentario varchar(256) NOT NULL DEFAULT ''," +
+                "imagen varchar(256) DEFAULT NULL);");
 
         db.execSQL("CREATE TABLE location (" +
-                " locationID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
-                " journeyID INTEGER NOT NULL," +
-                " altitude REAL NOT NULL," +
-                " longitude REAL NOT NULL," +
-                " latitude REAL NOT NULL," +
-                " CONSTRAINT fk1 FOREIGN KEY (journeyID) REFERENCES journey (journeyID) ON DELETE CASCADE);");
+                " ubicacionID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
+                " jornadaID INTEGER NOT NULL," +
+                " altitud REAL NOT NULL," +
+                " longitud REAL NOT NULL," +
+                " latitud REAL NOT NULL," +
+                " CONSTRAINT fk1 FOREIGN KEY (jornadaID) REFERENCES journey (jornadaID) ON DELETE CASCADE);");
     }
 
     // called when the database file exists but the version number stored in the db

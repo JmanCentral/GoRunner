@@ -189,9 +189,9 @@ public class Viajes extends AppCompatActivity {
     }
 
     public static class FinishedTrackingDialogue extends DialogFragment {
-        public static FinishedTrackingDialogue newInstance(String distance) {
+        public static FinishedTrackingDialogue newInstance(String distancia) {
             Bundle savedInstanceState = new Bundle();
-            savedInstanceState.putString("distance", distance);
+            savedInstanceState.putString("distancia", distancia);
             FinishedTrackingDialogue frag = new FinishedTrackingDialogue();
             frag.setArguments(savedInstanceState);
             return frag;
@@ -200,7 +200,7 @@ public class Viajes extends AppCompatActivity {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("Tu viaje ha sido guardado. Corriste un total de " + getArguments().getString("distance") + " KM")
+            builder.setMessage("Tu viaje ha sido guardado. Corriste un total de " + getArguments().getString("distancia") + " KM")
                     .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // regresar a la pantalla principal

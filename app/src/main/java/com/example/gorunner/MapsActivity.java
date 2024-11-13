@@ -37,16 +37,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapa = googleMap;
 
         // Dibujar polilínea
-        Cursor cursor = getContentResolver().query(JornadasObtenidas.LOCATION_URI,
-                null, JornadasObtenidas.L_JID + " = " + idViaje, null, null);
+        Cursor cursor = getContentResolver().query(JornadasObtenidas.uriUbicacion,
+                null, JornadasObtenidas.uriUbicacion + " = " + idViaje, null, null);
 
         PolylineOptions linea = new PolylineOptions().clickable(false);
         LatLng primeraLoc = null;
         LatLng ultimaLoc = null;
         try {
             while(cursor.moveToNext()) {
-                LatLng loc = new LatLng(cursor.getDouble(cursor.getColumnIndex(JornadasObtenidas.L_LATITUDE)),
-                        cursor.getDouble(cursor.getColumnIndex(JornadasObtenidas.L_LONGITUDE)));
+                LatLng loc = new LatLng(cursor.getDouble(cursor.getColumnIndex(JornadasObtenidas.latitud_jornada)),
+                        cursor.getDouble(cursor.getColumnIndex(JornadasObtenidas.longitud_jornada)));
                 if(cursor.isFirst()) {
                     primeraLoc = loc;
                 }
