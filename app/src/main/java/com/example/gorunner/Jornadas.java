@@ -13,20 +13,20 @@ public class Jornadas extends ContentProvider {
     DBHelper dbh;
     SQLiteDatabase db;
 
-    private static final UriMatcher matcher;
+    private static final UriMatcher emparejador;
 
 
     static {
-        matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        matcher.addURI(JornadasObtenidas.paquete, "journey", 1);
-        matcher.addURI(JornadasObtenidas.paquete, "journey/#", 2);
-        matcher.addURI(JornadasObtenidas.paquete, "location", 3);
-        matcher.addURI(JornadasObtenidas.paquete, "location/#", 4);
+        emparejador = new UriMatcher(UriMatcher.NO_MATCH);
+        emparejador.addURI(JornadasObtenidas.paquete, "jornada", 1);
+        emparejador.addURI(JornadasObtenidas.paquete, "jornada/#", 2);
+        emparejador.addURI(JornadasObtenidas.paquete, "ubicacion", 3);
+        emparejador.addURI(JornadasObtenidas.paquete, "ubicacion/#", 4);
     }
 
     @Override
     public boolean onCreate() {
-        Log.d("mdp", "Journey Content Provider created");
+        Log.d("mdp", "Proveedor de Contenido de Jornada creado");
         dbh = new DBHelper(this.getContext());
         db = dbh.getWritableDatabase();
         return (db != null);
@@ -44,104 +44,103 @@ public class Jornadas extends ContentProvider {
     // implement CRUD database operations
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
-        String tableName;
+    public Uri insert(Uri uri, ContentValues valores) {
+        String nombreTabla;
 
-        // given uri -> table name
-        switch(matcher.match(uri)) {
+        // URI dada -> nombre de la tabla
+        switch(emparejador.match(uri)) {
             case 1:
-                tableName = "journey";
+                nombreTabla = "jornada";
                 break;
             case 3:
-                tableName = "location";
+                nombreTabla = "ubicacion";
                 break;
             default:
-                tableName = "";
+                nombreTabla = "";
         }
 
-        // insert the values into the table and return the same url but with the id appended
-        long _id = db.insert(tableName, null, values);
-        Uri newRowUri = ContentUris.withAppendedId(uri, _id);
+        // Inserta los valores en la tabla y devuelve la misma URI pero con el id adjunto
+        long _id = db.insert(nombreTabla, null, valores);
+        Uri nuevaFilaUri = ContentUris.withAppendedId(uri, _id);
 
-        // notify any registered content observers that a change has been made to this table
-        getContext().getContentResolver().notifyChange(newRowUri, null);
-        return newRowUri;
+        // Notificar a los observadores de contenido registrados que se ha hecho un cambio en esta tabla
+        getContext().getContentResolver().notifyChange(nuevaFilaUri, null);
+        return nuevaFilaUri;
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[]
-            selectionArgs, String sortOrder) {
+    public Cursor query(Uri uri, String[] proyeccion, String seleccion, String[]
+            argumentosSeleccion, String orden) {
 
-        switch(matcher.match(uri)) {
+        switch(emparejador.match(uri)) {
             case 2:
-                // gave /# URI so they want a specific row
-                selection = "jornadaID = " + uri.getLastPathSegment();
+                // URI con /# para solicitar una fila específica
+                seleccion = "jornadaID = " + uri.getLastPathSegment();
             case 1:
-                return db.query("journey", projection, selection, selectionArgs, null, null, sortOrder);
+                return db.query("jornada", proyeccion, seleccion, argumentosSeleccion, null, null, orden);
             case 4:
-                selection = "ubicacionID = " + uri.getLastPathSegment();
+                seleccion = "ubicacionID = " + uri.getLastPathSegment();
             case 3:
-                return db.query("location", projection, selection, selectionArgs, null, null, sortOrder);
+                return db.query("ubicacion", proyeccion, seleccion, argumentosSeleccion, null, null, orden);
             default:
                 return null;
         }
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[]
-            selectionArgs) {
-        String tableName;
-        int count;
+    public int update(Uri uri, ContentValues valores, String seleccion, String[]
+            argumentosSeleccion) {
+        String nombreTabla;
+        int cuenta;
 
-        // given uri -> table name
-        switch(matcher.match(uri)) {
+        // URI dada -> nombre de la tabla
+        switch(emparejador.match(uri)) {
             case 2:
-                // gave /# URI so they want a specific row
-                selection = "jornadaID = " + uri.getLastPathSegment();
+                // URI con /# para solicitar una fila específica
+                seleccion = "jornadaID = " + uri.getLastPathSegment();
             case 1:
-                tableName = "journey";
-                count = db.update(tableName, values, selection, selectionArgs);
+                nombreTabla = "jornada";
+                cuenta = db.update(nombreTabla, valores, seleccion, argumentosSeleccion);
                 break;
             case 4:
-                selection = "ubicacionID = " + uri.getLastPathSegment();
+                seleccion = "ubicacionID = " + uri.getLastPathSegment();
             case 3:
-                tableName = "location";
-                count = db.update(tableName, values, selection, selectionArgs);
+                nombreTabla = "ubicacion";
+                cuenta = db.update(nombreTabla, valores, seleccion, argumentosSeleccion);
                 break;
             default:
                 return 0;
         }
 
         getContext().getContentResolver().notifyChange(uri, null);
-        return count;
+        return cuenta;
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        String tableName;
-        int count;
+    public int delete(Uri uri, String seleccion, String[] argumentosSeleccion) {
+        String nombreTabla;
+        int cuenta;
 
-        // given uri -> table name
-        switch(matcher.match(uri)) {
+        // URI dada -> nombre de la tabla
+        switch(emparejador.match(uri)) {
             case 2:
-                // gave /# URI so they want a specific row
-                selection = "jornadaID = " + uri.getLastPathSegment();
+                // URI con /# para solicitar una fila específica
+                seleccion = "jornadaID = " + uri.getLastPathSegment();
             case 1:
-                tableName = "journey";
-                count = db.delete(tableName, selection, selectionArgs);
+                nombreTabla = "jornada";
+                cuenta = db.delete(nombreTabla, seleccion, argumentosSeleccion);
                 break;
             case 4:
-                selection = "ubicacionID = " + uri.getLastPathSegment();
+                seleccion = "ubicacionID = " + uri.getLastPathSegment();
             case 3:
-                tableName = "location";
-                count = db.delete(tableName, selection, selectionArgs);
+                nombreTabla = "ubicacion";
+                cuenta = db.delete(nombreTabla, seleccion, argumentosSeleccion);
                 break;
             default:
                 return 0;
         }
 
         getContext().getContentResolver().notifyChange(uri, null);
-        return count;
+        return cuenta;
     }
-
 }
