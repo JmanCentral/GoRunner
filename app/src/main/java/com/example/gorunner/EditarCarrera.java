@@ -1,11 +1,13 @@
 package com.example.gorunner;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -15,7 +17,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,6 +30,7 @@ public class EditarCarrera extends AppCompatActivity {
     private final int RESULTADO_CARGAR_IMAGEN = 1;
     private final int SOLICITUD_CAPTURAR_IMAGEN = 2;
     private final int SOLICITUD_PERMISO_CAMARA = 100;
+    private static final int SOLICITUD_PERMISO_ALMACENAMIENTO = 103;
     private ImageView imagenViaje;
     private EditText tituloET;
     private EditText comentarioET;
@@ -62,20 +64,65 @@ public class EditarCarrera extends AppCompatActivity {
             return;
         }
 
-        Uri uriConsultaFila = Uri.withAppendedPath(JornadasObtenidas.uriJornada, "" + idViaje);
+        Uri uriConsultaFila = Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido, "" + idViaje);
 
         ContentValues valores = new ContentValues();
-        valores.put(JornadasObtenidas.calificacion_jornada, calificacion);
-        valores.put(JornadasObtenidas.comentario_jornada, comentarioET.getText().toString());
-        valores.put(JornadasObtenidas.nombre_jornada, tituloET.getText().toString());
+        valores.put(RecorridosObtenidos.calificacion_recorrido, calificacion);
+        valores.put(RecorridosObtenidos.comentario_recorrido, comentarioET.getText().toString());
+        valores.put(RecorridosObtenidos.nombre_recorrido, tituloET.getText().toString());
 
         if(imagenSeleccionadaViaje != null) {
-            valores.put(JornadasObtenidas.imagen_jornada, imagenSeleccionadaViaje.toString());
+            valores.put(RecorridosObtenidos.imagen_recorrido, imagenSeleccionadaViaje.toString());
         }
 
         getContentResolver().update(uriConsultaFila, valores, null, null);
         finish();
     }
+
+    private void mostrarDialogoSeleccionImagen() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Seleccionar imagen");
+        builder.setMessage("Elija una opción para agregar una imagen");
+
+        // Opción para la cámara
+        builder.setPositiveButton("Cámara", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                verificarPermisoCamara(); // Llama al método que verifica los permisos de la cámara
+            }
+        });
+
+        // Opción para el almacenamiento
+        builder.setNegativeButton("Almacenamiento", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                verificarPermisoAlmacenamiento(); // Llama al método que verificará los permisos de almacenamiento
+            }
+        });
+
+        builder.show();
+    }
+
+    private void verificarPermisoAlmacenamiento() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    SOLICITUD_PERMISO_ALMACENAMIENTO);
+        } else {
+            // Si ya tiene el permiso, abrir el almacenamiento
+            abrirAlmacenamiento();
+        }
+    }
+
+    private void abrirAlmacenamiento() {
+        Intent intentSeleccionarImagen = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intentSeleccionarImagen.setType("image/*");
+        startActivityForResult(intentSeleccionarImagen, RESULTADO_CARGAR_IMAGEN);
+    }
+
+
 
     private void verificarPermisoCamara() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -101,7 +148,7 @@ public class EditarCarrera extends AppCompatActivity {
 
 
     public void CambiarImagen(View v) {
-        verificarPermisoCamara();
+        mostrarDialogoSeleccionImagen();
     }
 
     @Override
@@ -157,15 +204,15 @@ public class EditarCarrera extends AppCompatActivity {
 
     /* Asigna a los EditTexts el texto inicial desde la base de datos */
     private void llenarCamposEdicion() {
-        Cursor cursor = getContentResolver().query(Uri.withAppendedPath(JornadasObtenidas.uriJornada, idViaje + ""), null, null, null, null);
+        Cursor cursor = getContentResolver().query(Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido, idViaje + ""), null, null, null, null);
 
         if(cursor.moveToFirst()) {
-            tituloET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.nombre_jornada)));
-            comentarioET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.comentario_jornada)));
-            calificacionET.setText(cursor.getString(cursor.getColumnIndex(JornadasObtenidas.calificacion_jornada)));
+            tituloET.setText(cursor.getString(cursor.getColumnIndex(RecorridosObtenidos.nombre_recorrido)));
+            comentarioET.setText(cursor.getString(cursor.getColumnIndex(RecorridosObtenidos.comentario_recorrido)));
+            calificacionET.setText(cursor.getString(cursor.getColumnIndex(RecorridosObtenidos.calificacion_recorrido)));
 
             // Si el usuario ha configurado una imagen, mostrarla; de lo contrario, se muestra la imagen predeterminada
-            String strUri = cursor.getString(cursor.getColumnIndex(JornadasObtenidas.imagen_jornada));
+            String strUri = cursor.getString(cursor.getColumnIndex(RecorridosObtenidos.imagen_recorrido));
             if(strUri != null) {
                 try {
                     final Uri uriImagen = Uri.parse(strUri);

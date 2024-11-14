@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
 
-public class Jornadas extends ContentProvider {
+public class Recorridos extends ContentProvider {
     DBHelper dbh;
     SQLiteDatabase db;
 
@@ -18,15 +18,15 @@ public class Jornadas extends ContentProvider {
     //desde git
     static {
         emparejador = new UriMatcher(UriMatcher.NO_MATCH);
-        emparejador.addURI(JornadasObtenidas.paquete, "jornada", 1);
-        emparejador.addURI(JornadasObtenidas.paquete, "jornada/#", 2);
-        emparejador.addURI(JornadasObtenidas.paquete, "ubicacion", 3);
-        emparejador.addURI(JornadasObtenidas.paquete, "ubicacion/#", 4);
+        emparejador.addURI(RecorridosObtenidos.paquete, "recorrido", 1);
+        emparejador.addURI(RecorridosObtenidos.paquete, "recorrido/#", 2);
+        emparejador.addURI(RecorridosObtenidos.paquete, "ubicacion", 3);
+        emparejador.addURI(RecorridosObtenidos.paquete, "ubicacion/#", 4);
     }
 
     @Override
     public boolean onCreate() {
-        Log.d("mdp", "Proveedor de Contenido de Jornada creado");
+        Log.d("mdp", "Proveedor de Contenido de recorrido creado");
         dbh = new DBHelper(this.getContext());
         db = dbh.getWritableDatabase();
         return (db != null);
@@ -50,7 +50,7 @@ public class Jornadas extends ContentProvider {
         // URI dada -> nombre de la tabla
         switch(emparejador.match(uri)) {
             case 1:
-                nombreTabla = "jornada";
+                nombreTabla = "recorrido";
                 break;
             case 3:
                 nombreTabla = "ubicacion";
@@ -75,9 +75,9 @@ public class Jornadas extends ContentProvider {
         switch(emparejador.match(uri)) {
             case 2:
                 // URI con /# para solicitar una fila específica
-                seleccion = "jornadaID = " + uri.getLastPathSegment();
+                seleccion = "recorridoID = " + uri.getLastPathSegment();
             case 1:
-                return db.query("jornada", proyeccion, seleccion, argumentosSeleccion, null, null, orden);
+                return db.query("recorrido", proyeccion, seleccion, argumentosSeleccion, null, null, orden);
             case 4:
                 seleccion = "ubicacionID = " + uri.getLastPathSegment();
             case 3:
@@ -97,9 +97,9 @@ public class Jornadas extends ContentProvider {
         switch(emparejador.match(uri)) {
             case 2:
                 // URI con /# para solicitar una fila específica
-                seleccion = "jornadaID = " + uri.getLastPathSegment();
+                seleccion = "recorridoID = " + uri.getLastPathSegment();
             case 1:
-                nombreTabla = "jornada";
+                nombreTabla = "recorrido";
                 cuenta = db.update(nombreTabla, valores, seleccion, argumentosSeleccion);
                 break;
             case 4:
@@ -125,9 +125,9 @@ public class Jornadas extends ContentProvider {
         switch(emparejador.match(uri)) {
             case 2:
                 // URI con /# para solicitar una fila específica
-                seleccion = "jornadaID = " + uri.getLastPathSegment();
+                seleccion = "recorridoID = " + uri.getLastPathSegment();
             case 1:
-                nombreTabla = "jornada";
+                nombreTabla = "recorrido";
                 cuenta = db.delete(nombreTabla, seleccion, argumentosSeleccion);
                 break;
             case 4:

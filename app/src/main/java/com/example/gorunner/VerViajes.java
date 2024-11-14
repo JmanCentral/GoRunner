@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CalendarView;
-import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -175,9 +172,9 @@ public class VerViajes extends ListActivity {
         String[] partesFecha = fecha.split("/");
         fecha = partesFecha[2] + "-" + partesFecha[1] + "-" + partesFecha[0];
 
-        Cursor c = getContentResolver().query(JornadasObtenidas.uriJornada,
-                new String[] {JornadasObtenidas.id_jornada + " _id", JornadasObtenidas.nombre_jornada, JornadasObtenidas.imagen_jornada},
-                JornadasObtenidas.fecha_jornada + " = ?", new String[] {fecha}, JornadasObtenidas.nombre_jornada + " ASC");
+        Cursor c = getContentResolver().query(RecorridosObtenidos.uriRecorrido,
+                new String[] {RecorridosObtenidos.id_recorrido + " _id", RecorridosObtenidos.nombre_recorrido, RecorridosObtenidos.imagen_recorrido},
+                RecorridosObtenidos.fecha_recorrido + " = ?", new String[] {fecha}, RecorridosObtenidos.nombre_recorrido + " ASC");
 
         Log.d("mdp", "Viajes cargados: " + c.getCount());
 
@@ -189,8 +186,8 @@ public class VerViajes extends ListActivity {
         try {
             while(c.moveToNext()) {
                 ItemViaje item = new ItemViaje();
-                item.setNombre(c.getString(c.getColumnIndex(JornadasObtenidas.nombre_jornada)));
-                item.setUriStr(c.getString(c.getColumnIndex(JornadasObtenidas.imagen_jornada)));
+                item.setNombre(c.getString(c.getColumnIndex(RecorridosObtenidos.nombre_recorrido)));
+                item.setUriStr(c.getString(c.getColumnIndex(RecorridosObtenidos.imagen_recorrido)));
                 item.setId(c.getLong(c.getColumnIndex("_id")));
                 nombresViajes.add(item);
             }

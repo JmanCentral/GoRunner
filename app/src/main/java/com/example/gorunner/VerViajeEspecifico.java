@@ -69,7 +69,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
 
         llenarVista();
         getContentResolver().registerContentObserver(
-                JornadasObtenidas.todas, true, new MiObservador(manejador));
+                RecorridosObtenidos.todas, true, new MiObservador(manejador));
     }
 
     public void Editar(View vista) {
@@ -92,12 +92,12 @@ public class VerViajeEspecifico extends AppCompatActivity {
 
     private void llenarVista() {
         // Usar el proveedor de contenido para cargar datos de la base de datos y mostrarlos en las vistas de texto
-        Cursor c = getContentResolver().query(Uri.withAppendedPath(JornadasObtenidas.uriJornada,
+        Cursor c = getContentResolver().query(Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido,
                 idViaje + ""), null, null, null, null);
 
         if (c.moveToFirst()) {
-            double distancia = c.getDouble(c.getColumnIndex(JornadasObtenidas.distancia_jornada));
-            long tiempo = c.getLong(c.getColumnIndex(JornadasObtenidas.duracion_jornada));
+            double distancia = c.getDouble(c.getColumnIndex(RecorridosObtenidos.distancia_recorrido));
+            long tiempo = c.getLong(c.getColumnIndex(RecorridosObtenidos.duracion_recorrido));
             double velocidadPromedio = 0;
 
             if (tiempo != 0) {
@@ -113,17 +113,17 @@ public class VerViajeEspecifico extends AppCompatActivity {
             tiempoTV.setText(String.format("%02d:%02d:%02d", horas, minutos, segundos));
 
             // La fecha se almacena como yyyy-mm-dd, convertir a dd-mm-yyyy
-            String fecha = c.getString(c.getColumnIndex(JornadasObtenidas.fecha_jornada));
+            String fecha = c.getString(c.getColumnIndex(RecorridosObtenidos.fecha_recorrido));
             String[] partesFecha = fecha.split("-");
             fecha = partesFecha[2] + "/" + partesFecha[1] + "/" + partesFecha[0];
 
             fechaTV.setText(fecha);
-            calificacionTV.setText(c.getInt(c.getColumnIndex(JornadasObtenidas.calificacion_jornada)) + "");
-            comentarioTV.setText(c.getString(c.getColumnIndex(JornadasObtenidas.comentario_jornada)));
-            tituloTV.setText(c.getString(c.getColumnIndex(JornadasObtenidas.nombre_jornada)));
+            calificacionTV.setText(c.getInt(c.getColumnIndex(RecorridosObtenidos.calificacion_recorrido)) + "");
+            comentarioTV.setText(c.getString(c.getColumnIndex(RecorridosObtenidos.comentario_recorrido)));
+            tituloTV.setText(c.getString(c.getColumnIndex(RecorridosObtenidos.nombre_recorrido)));
 
             // Si el usuario ha configurado una imagen, mostrarla; en caso contrario, mostrar la imagen predeterminada
-            String uriStr = c.getString(c.getColumnIndex(JornadasObtenidas.imagen_jornada));
+            String uriStr = c.getString(c.getColumnIndex(RecorridosObtenidos.imagen_recorrido));
             if (uriStr != null) {
                 try {
                     final Uri imagenUri = Uri.parse(uriStr);

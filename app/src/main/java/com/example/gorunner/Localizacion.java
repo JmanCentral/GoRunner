@@ -41,7 +41,7 @@ public class Localizacion extends Service {
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationListener = new MiLocalizacionListener();
-        locationListener.recordLocations = false;
+        locationListener.grabarUbicaciones = false;
 
 
         try {
@@ -120,14 +120,14 @@ public class Localizacion extends Service {
     }
 
     protected float getDistance() {
-        return locationListener.getDistanceOfJourney();
+        return locationListener.obtenerDistanciaDeJornada();
     }
 
     /* Display notification and start recording GPS locations for a new, also start timer */
     protected void playJourney() {
         addNotification();
-        locationListener.newJourney();
-        locationListener.recordLocations = true;
+        locationListener.nuevaJornada();
+        locationListener.grabarUbicaciones = true;
         startTime = SystemClock.elapsedRealtime();
         stopTime = 0;
     }
@@ -157,33 +157,33 @@ public class Localizacion extends Service {
     protected void saveJourney() {
         // save journey to database using content provider
         ContentValues journeyData = new ContentValues();
-        journeyData.put(JornadasObtenidas.distancia_jornada, getDistance());
-        journeyData.put(JornadasObtenidas.duracion_jornada, (long) getDuration());
-        journeyData.put(JornadasObtenidas.fecha_jornada, getDateTime());
+        journeyData.put(RecorridosObtenidos.distancia_recorrido, getDistance());
+        journeyData.put(RecorridosObtenidos.duracion_recorrido, (long) getDuration());
+        journeyData.put(RecorridosObtenidos.fecha_recorrido, getDateTime());
 
-        long jornadaID = Long.parseLong(getContentResolver().insert(JornadasObtenidas.uriJornada, journeyData).getLastPathSegment());
+        long recorridoID = Long.parseLong(getContentResolver().insert(RecorridosObtenidos.uriRecorrido, journeyData).getLastPathSegment());
 
         // for each location belonging to this journey save it to the location table linked to this journey
-        for(Location location : locationListener.getLocations()) {
+        for(Location location : locationListener.obtenerUbicaciones()) {
             ContentValues locationData = new ContentValues();
-            locationData.put(JornadasObtenidas.jornadaId, jornadaID);
-            locationData.put(JornadasObtenidas.altitud_jornada, location.getAltitude());
-            locationData.put(JornadasObtenidas.latitud_jornada, location.getLatitude());
-            locationData.put(JornadasObtenidas.longitud_jornada, location.getLongitude());
+            locationData.put(RecorridosObtenidos.recorridoId, recorridoID);
+            locationData.put(RecorridosObtenidos.altitud_recorrido, location.getAltitude());
+            locationData.put(RecorridosObtenidos.latitud_recorrido, location.getLatitude());
+            locationData.put(RecorridosObtenidos.longitud_recorrido, location.getLongitude());
 
-            getContentResolver().insert(JornadasObtenidas.uriUbicacion, locationData);
+            getContentResolver().insert(RecorridosObtenidos.uriUbicacion, locationData);
         }
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel(NOTIFICATION_ID);
 
         // reset state by clearing locations, stop recording, reset startTime
-        locationListener.recordLocations = false;
+        locationListener.grabarUbicaciones = false;
         stopTime = SystemClock.elapsedRealtime();
         startTime = 0;
-        locationListener.newJourney();
+        locationListener.nuevaJornada();
 
-        Log.d("mdp", "Journey saved with id = " + jornadaID);
+        Log.d("mdp", "Journey saved with id = " + recorridoID);
     }
 
     protected void changeGPSRequestFrequency(int time, int dist) {

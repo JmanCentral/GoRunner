@@ -30,7 +30,7 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".StatisticsActivity" />
+        <activity android:name=".EstadisticasActivity" />
         <activity android:name=".MapsActivity" />
         <activity android:name=".EditarCarrera" />
         <activity android:name=".VerViajeEspecifico" />
@@ -42,8 +42,8 @@
             android:exported="true" />
 
         <provider
-            android:name=".Jornadas"
-            android:authorities="com.example.gorunner.Jornadas"
+            android:name=".Recorridos"
+            android:authorities="com.example.gorunner.Recorridos"
             android:exported="true" />
 
         <activity android:name=".Viajes" />

@@ -24,7 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class StatisticsActivity extends AppCompatActivity {
+public class EstadisticasActivity extends AppCompatActivity {
 
     private BarChart barChart;
     private TextView recordDistance;
@@ -78,7 +78,7 @@ public class StatisticsActivity extends AppCompatActivity {
                 }
 
                 DatePickerDialog dialog = new DatePickerDialog(
-                        StatisticsActivity.this,
+                        EstadisticasActivity.this,
                         android.R.style.Theme_Holo_Light_Dialog_MinWidth,
                         dateListener,
                         yyyy, mm, dd);
@@ -121,14 +121,14 @@ public class StatisticsActivity extends AppCompatActivity {
             @Override
             public void run() {
                 // get the time today and distance today
-                Cursor c = getContentResolver().query(JornadasObtenidas.uriJornada,
-                        null, JornadasObtenidas.fecha_jornada + " = ?", new String[] {date}, null);
+                Cursor c = getContentResolver().query(RecorridosObtenidos.uriRecorrido,
+                        null, RecorridosObtenidos.fecha_recorrido + " = ?", new String[] {date}, null);
                 double distaneTodayKM = 0;
                 long   timeTodayS = 0;
                 try {
                     while(c.moveToNext()) {
-                        distaneTodayKM += c.getDouble(c.getColumnIndex(JornadasObtenidas.distancia_jornada));
-                        timeTodayS     += c.getLong(c.getColumnIndex(JornadasObtenidas.duracion_jornada));
+                        distaneTodayKM += c.getDouble(c.getColumnIndex(RecorridosObtenidos.distancia_recorrido));
+                        timeTodayS     += c.getLong(c.getColumnIndex(RecorridosObtenidos.duracion_recorrido));
                     }
                 } finally {
                     c.close();
@@ -141,13 +141,13 @@ public class StatisticsActivity extends AppCompatActivity {
 
 
                 // calculate record distance in 1 day and total distance travelled all time
-                c = getContentResolver().query(JornadasObtenidas.uriJornada,
+                c = getContentResolver().query(RecorridosObtenidos.uriRecorrido,
                         null, null, null, null);
                 double totalDistanceKM = 0;
                 double recordDistanceKM = 0;
                 try {
                     while(c.moveToNext()) {
-                        double d = c.getDouble(c.getColumnIndex(JornadasObtenidas.distancia_jornada));
+                        double d = c.getDouble(c.getColumnIndex(RecorridosObtenidos.distancia_recorrido));
                         if(recordDistanceKM < d) {
                             recordDistanceKM = d;
                         }
@@ -181,17 +181,17 @@ public class StatisticsActivity extends AppCompatActivity {
                     String sun = sdf.format(cal.getTime());
 
                     Log.d("mdp", "Mon = " + mon + ", Sun = " + sun);
-                    c = getContentResolver().query(JornadasObtenidas.uriJornada,
-                            null, JornadasObtenidas.fecha_jornada + " BETWEEN ? AND ?",
+                    c = getContentResolver().query(RecorridosObtenidos.uriRecorrido,
+                            null, RecorridosObtenidos.fecha_recorrido + " BETWEEN ? AND ?",
                             new String[] {mon, sun}, null);
                     try {
                         for(int i = 0; c.moveToNext(); i++) {
                             // put each journey into the bar chart depending on what day it is
-                            String date = c.getString(c.getColumnIndex(JornadasObtenidas.fecha_jornada));
+                            String date = c.getString(c.getColumnIndex(RecorridosObtenidos.fecha_recorrido));
                             cal = Calendar.getInstance();
                             cal.setTime(sdf.parse(date));
                             int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK); // 1 = sunday, 2 = mon ... 7 = sat
-                            distancesOnDays[dayOfWeek - 1] += (float) c.getDouble(c.getColumnIndex(JornadasObtenidas.distancia_jornada));
+                            distancesOnDays[dayOfWeek - 1] += (float) c.getDouble(c.getColumnIndex(RecorridosObtenidos.distancia_recorrido));
                         }
                     } finally {
                         c.close();
