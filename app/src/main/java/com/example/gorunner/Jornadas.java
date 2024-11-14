@@ -15,7 +15,7 @@ public class Jornadas extends ContentProvider {
 
     private static final UriMatcher emparejador;
 
-
+    //desde git
     static {
         emparejador = new UriMatcher(UriMatcher.NO_MATCH);
         emparejador.addURI(JornadasObtenidas.paquete, "jornada", 1);
