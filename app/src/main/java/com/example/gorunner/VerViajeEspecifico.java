@@ -30,7 +30,6 @@ public class VerViajeEspecifico extends AppCompatActivity {
 
     private Handler manejador = new Handler();
 
-    // Observador que se notifica cuando ocurre una inserción o eliminación en la URI dada
     protected class MiObservador extends ContentObserver {
 
         public MiObservador(Handler handler) {

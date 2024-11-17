@@ -78,6 +78,8 @@ public class EditarCarrera extends AppCompatActivity {
         }
 
         getContentResolver().update(uriConsultaFila, valores, null, null);
+
+        Toast.makeText(getApplicationContext(), "El recorrido se ha guardado  correctamente", Toast.LENGTH_SHORT).show();
         finish();
     }
 

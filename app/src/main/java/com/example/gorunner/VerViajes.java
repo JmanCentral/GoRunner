@@ -1,6 +1,5 @@
 package com.example.gorunner;
 
-import android.app.DatePickerDialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -77,7 +76,7 @@ public class VerViajes extends ListActivity {
             View vista = vistaConvertida;
             if (vista == null) {
                 LayoutInflater inflador = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                vista = inflador.inflate(R.layout.journeylist, null);
+                vista = inflador.inflate(R.layout.lista_recorridos, null);
             }
 
             ItemViaje item = items.get(posicion);
@@ -114,7 +113,7 @@ public class VerViajes extends ListActivity {
         setContentView(R.layout.activity_ver_viajes);
 
         nombresViajes = new ArrayList<ItemViaje>();
-        adaptador = new AdaptadorViaje(this, R.layout.journeylist, nombresViajes);
+        adaptador = new AdaptadorViaje(this, R.layout.lista_recorridos, nombresViajes);
         setListAdapter(adaptador);
 
         fecha = findViewById(R.id.calendarView);

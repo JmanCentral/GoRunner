@@ -57,7 +57,6 @@ public class Viajes extends AppCompatActivity {
         botonIniciar = findViewById(R.id.startButton);
         botonDetener = findViewById(R.id.stopButton);
 
-        // conectar al servicio para ver si actualmente se está rastreando antes de habilitar un botón
         botonDetener.setEnabled(false);
         botonIniciar.setEnabled(false);
 
