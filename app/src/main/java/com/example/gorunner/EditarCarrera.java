@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -39,6 +40,7 @@ public class EditarCarrera extends AppCompatActivity {
 
     private Uri imagenSeleccionadaViaje;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +48,7 @@ public class EditarCarrera extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
 
-        imagenViaje = findViewById(R.id.journeyImg);
+        imagenViaje = findViewById(R.id.Fotico);
         tituloET = findViewById(R.id.titleEditText);
         comentarioET = findViewById(R.id.commentEditText);
         calificacionET = findViewById(R.id.ratingEditText);
@@ -111,7 +113,6 @@ public class EditarCarrera extends AppCompatActivity {
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     SOLICITUD_PERMISO_ALMACENAMIENTO);
         } else {
-            // Si ya tiene el permiso, abrir el almacenamiento
             abrirAlmacenamiento();
         }
     }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">GoRunner</string>
+    <string name="txt_recorrido">Detalles del recorrido</string>
 </resources>

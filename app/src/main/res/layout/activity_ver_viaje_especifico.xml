@@ -19,12 +19,13 @@
                 android:id="@+id/ViewSingleJourney_titleText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="60dp"
                 android:gravity="center"
                 android:text="Viaje específico"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textColor="#0f4d8b"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:layout_editor_absoluteX="0dp" />
 
             <ImageView
                 android:id="@+id/ViewSingleJourney_journeyImg"
@@ -38,7 +39,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="307dp"
             android:layout_marginBottom="5dp"
             tools:layout_editor_absoluteY="8dp">
 
@@ -171,19 +172,49 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tv" />
 
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="113dp"
+                android:layout_height="22dp"
+                android:layout_marginTop="16dp"
+                android:text="Comentarios"
+                android:textColor="#0f4d8b"
+                android:textColorLink="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv6" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
             android:id="@+id/ViewSingleJourney_commentText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="259dp"
+            android:layout_height="157dp"
             android:layout_gravity="center"
             android:layout_marginTop="15dp"
-            android:text="Agregar comentarios"
+            android:inputType="text|textMultiLine"
+            android:text="No hay comentarios"
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
             android:textColor="#0f4d8b"
-            android:textSize="14sp"
+            android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="25dp"
+            android:onClick="Editar"
+            android:padding="8dp"
+            android:text="Editar recorrido"
+            android:background="#0f4d8b"
+            android:textColor="@color/common_google_signin_btn_text_dark_default"
+            android:theme="@style/FlatButton"
             app:layout_constraintStart_toStartOf="parent" />
 
         <Button
@@ -197,20 +228,6 @@
             android:text="Ver recorrido en el mapa"
             android:textColor="#0f4d8b"
             android:theme="@style/FlatButton" />
-
-        <Button
-            style="@style/Widget.AppCompat.Button.Borderless.Colored"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:onClick="Editar"
-            android:padding="8dp"
-            android:text="Editar recorrido"
-            android:textColor="#0f4d8b"
-            android:theme="@style/FlatButton"
-            app:layout_constraintStart_toStartOf="parent" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

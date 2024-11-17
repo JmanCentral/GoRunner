@@ -27,7 +27,6 @@ import java.util.Calendar;
 public class VerViajes extends ListActivity {
 
     private CalendarView fecha;
-    private DatePickerDialog.OnDateSetListener escuchaFecha;
 
     private ListView listaViajes;
     private AdaptadorViaje adaptador;

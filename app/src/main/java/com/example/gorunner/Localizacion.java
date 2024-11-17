@@ -22,221 +22,218 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Localizacion extends Service {
-    private LocationManager locationManager;
-    private MiLocalizacionListener locationListener;
-    private final IBinder binder = new LocationServiceBinder();
+    private LocationManager gestorLocalizacion;
+    private MiLocalizacionListener oyenteLocalizacion;
+    private final IBinder enlace = new EnlaceServicioLocalizacion();
 
-    private final String CHANNEL_ID = "100";
-    private final int NOTIFICATION_ID = 001;
-    private long startTime = 0;
-    private long stopTime = 0;
+    private final String ID_CANAL = "100";
+    private final int ID_NOTIFICACION = 001;
+    private long tiempoInicio = 0;
+    private long tiempoFin = 0;
 
-    final int TIME_INTERVAL = 3;
-    final int DIST_INTERVAL = 3;
+    final int INTERVALO_TIEMPO = 3;
+    final int INTERVALO_DISTANCIA = 3;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("mdp", "Location Service created");
+        Log.d("mdp", "Servicio de Localización creado");
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationListener = new MiLocalizacionListener();
-        locationListener.grabarUbicaciones = false;
-
+        gestorLocalizacion = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        oyenteLocalizacion = new MiLocalizacionListener();
+        oyenteLocalizacion.grabarUbicaciones = false;
 
         try {
-            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, TIME_INTERVAL, DIST_INTERVAL, locationListener);
-        } catch(SecurityException e) {
-            // don't have the permission to access GPS
-            Log.d("mdp", "No Permissions for GPS");
+            gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, INTERVALO_TIEMPO, INTERVALO_DISTANCIA, oyenteLocalizacion);
+        } catch (SecurityException e) {
+            // no se tiene permiso para acceder al GPS
+            Log.d("mdp", "No se tienen permisos para el GPS");
         }
-
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        super.onStartCommand(intent,  flags, startId);
+        super.onStartCommand(intent, flags, startId);
 
-        // broadcast receiver may send message about low battery in which bundle containing battery will exist
-        if(intent != null) {
-            Bundle b = intent.getExtras();
-            if(b != null && b.getBoolean("battery")) {
-                // slow down GPS request frequency
-                changeGPSRequestFrequency(TIME_INTERVAL * 3, DIST_INTERVAL * 3);
+        // el receptor de difusión puede enviar mensajes sobre batería baja en los que el paquete contiene información de la batería
+        if (intent != null) {
+            Bundle paquete = intent.getExtras();
+            if (paquete != null && paquete.getBoolean("bateria")) {
+                // reducir la frecuencia de solicitud del GPS
+                cambiarFrecuenciaSolicitudGPS(INTERVALO_TIEMPO * 3, INTERVALO_DISTANCIA * 3);
             }
         }
 
         return START_NOT_STICKY;
     }
 
-
-    private void addNotification() {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
+    private void agregarNotificacion() {
+        NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Tracking Journey";
-            String description = "Keep Running!";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name,
-                    importance);
-            channel.setDescription(description);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
-            notificationManager.createNotificationChannel(channel);
+            CharSequence nombre = "Rastreo de Jornada";
+            String descripcion = "¡Sigue corriendo!";
+            int importancia = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel canal = new NotificationChannel(ID_CANAL, nombre, importancia);
+            canal.setDescription(descripcion);
+            gestorNotificaciones.createNotificationChannel(canal);
         }
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this,
-                CHANNEL_ID)
+        PendingIntent intentoPendiente = PendingIntent.getActivity(this, 0, intent, 0);
+        NotificationCompat.Builder constructorNotificacion = new NotificationCompat.Builder(this, ID_CANAL)
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("Tracking Journey")
-                .setContentText("Keep Running!")
-                .setContentIntent(pendingIntent)
+                .setContentTitle("Rastreo de Jornada")
+                .setContentText("¡Sigue corriendo!")
+                .setContentIntent(intentoPendiente)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+        gestorNotificaciones.notify(ID_NOTIFICACION, constructorNotificacion.build());
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // user has closed the application so cancel the current journey and stop tracking GPS
-        locationManager.removeUpdates(locationListener);
-        locationListener = null;
-        locationManager = null;
+        // el usuario ha cerrado la aplicación, cancelar la jornada actual y detener el rastreo del GPS
+        gestorLocalizacion.removeUpdates(oyenteLocalizacion);
+        oyenteLocalizacion = null;
+        gestorLocalizacion = null;
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.cancel(NOTIFICATION_ID);
+        NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        gestorNotificaciones.cancel(ID_NOTIFICACION);
 
-        Log.d("mdp", "Location Service destroyed");
+        Log.d("mdp", "Servicio de Localización destruido");
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return binder;
+        return enlace;
     }
 
-    protected float getDistance() {
-        return locationListener.obtenerDistanciaDeJornada();
+    protected float obtenerDistancia() {
+        return oyenteLocalizacion.obtenerDistanciaDeJornada();
     }
 
-    /* Display notification and start recording GPS locations for a new, also start timer */
-    protected void playJourney() {
-        addNotification();
-        locationListener.nuevaJornada();
-        locationListener.grabarUbicaciones = true;
-        startTime = SystemClock.elapsedRealtime();
-        stopTime = 0;
+    /* Mostrar notificación e iniciar grabación de ubicaciones GPS para una nueva jornada, también iniciar el temporizador */
+    protected void iniciarRecorrido() {
+        agregarNotificacion();
+        oyenteLocalizacion.nuevaJornada();
+        oyenteLocalizacion.grabarUbicaciones = true;
+        tiempoInicio = SystemClock.elapsedRealtime();
+        tiempoFin = 0;
     }
 
-    /* Get the duration of the current journey */
-    protected double getDuration() {
-        if(startTime == 0) {
+
+    /* Obtener la duración de la jornada actual */
+    protected double obtenerDuracion() {
+        if (tiempoInicio == 0) {
             return 0.0;
         }
 
-        long endTime = SystemClock.elapsedRealtime();
+        long tiempoFinal = SystemClock.elapsedRealtime();
 
-        if(stopTime != 0) {
-            // saveJourney has been called, until playJourney is called again display constant time
-            endTime = stopTime;
+        if (tiempoFin != 0) {
+            // se ha llamado a guardarJornada, hasta que se llame a iniciarJornada se muestra un tiempo constante
+            tiempoFinal = tiempoFin;
         }
 
-        long elapsedMilliSeconds = endTime - startTime;
-        return elapsedMilliSeconds / 1000.0;
+        long milisegundosTranscurridos = tiempoFinal - tiempoInicio;
+        return milisegundosTranscurridos / 1000.0;
     }
 
-    protected boolean currentlyTracking() {
-        return startTime != 0;
+    protected boolean rastreoActivo() {
+        return tiempoInicio != 0;
     }
 
-    /* Save journey to the database and stop saving GPS locations, also removes the notification */
-    protected void saveJourney() {
-        // save journey to database using content provider
-        ContentValues journeyData = new ContentValues();
-        journeyData.put(RecorridosObtenidos.distancia_recorrido, getDistance());
-        journeyData.put(RecorridosObtenidos.duracion_recorrido, (long) getDuration());
-        journeyData.put(RecorridosObtenidos.fecha_recorrido, getDateTime());
+    /* Guardar la jornada en la base de datos y detener el guardado de ubicaciones GPS, también elimina la notificación */
+    protected void guardarRecorrido() {
+        // guardar jornada en la base de datos usando el proveedor de contenido
+        ContentValues datosJornada = new ContentValues();
+        datosJornada.put(RecorridosObtenidos.distancia_recorrido, obtenerDistancia());
+        datosJornada.put(RecorridosObtenidos.duracion_recorrido, (long) obtenerDuracion());
+        datosJornada.put(RecorridosObtenidos.fecha_recorrido, obtenerFechaHora());
 
-        long recorridoID = Long.parseLong(getContentResolver().insert(RecorridosObtenidos.uriRecorrido, journeyData).getLastPathSegment());
+        long idRecorrido = Long.parseLong(getContentResolver().insert(RecorridosObtenidos.uriRecorrido, datosJornada).getLastPathSegment());
 
-        // for each location belonging to this journey save it to the location table linked to this journey
-        for(Location location : locationListener.obtenerUbicaciones()) {
-            ContentValues locationData = new ContentValues();
-            locationData.put(RecorridosObtenidos.recorridoId, recorridoID);
-            locationData.put(RecorridosObtenidos.altitud_recorrido, location.getAltitude());
-            locationData.put(RecorridosObtenidos.latitud_recorrido, location.getLatitude());
-            locationData.put(RecorridosObtenidos.longitud_recorrido, location.getLongitude());
+        // para cada ubicación perteneciente a esta jornada, guardarla en la tabla de ubicaciones vinculada a esta jornada
+        for (Location ubicacion : oyenteLocalizacion.obtenerUbicaciones()) {
+            ContentValues datosUbicacion = new ContentValues();
+            datosUbicacion.put(RecorridosObtenidos.recorridoId, idRecorrido);
+            datosUbicacion.put(RecorridosObtenidos.altitud_recorrido, ubicacion.getAltitude());
+            datosUbicacion.put(RecorridosObtenidos.latitud_recorrido, ubicacion.getLatitude());
+            datosUbicacion.put(RecorridosObtenidos.longitud_recorrido, ubicacion.getLongitude());
 
-            getContentResolver().insert(RecorridosObtenidos.uriUbicacion, locationData);
+            getContentResolver().insert(RecorridosObtenidos.uriUbicacion, datosUbicacion);
         }
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.cancel(NOTIFICATION_ID);
+        NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        gestorNotificaciones.cancel(ID_NOTIFICACION);
 
-        // reset state by clearing locations, stop recording, reset startTime
-        locationListener.grabarUbicaciones = false;
-        stopTime = SystemClock.elapsedRealtime();
-        startTime = 0;
-        locationListener.nuevaJornada();
+        // reiniciar el estado limpiando ubicaciones, detener la grabación, reiniciar tiempoInicio
+        oyenteLocalizacion.grabarUbicaciones = false;
+        tiempoFin = SystemClock.elapsedRealtime();
+        tiempoInicio = 0;
+        oyenteLocalizacion.nuevaJornada();
 
-        Log.d("mdp", "Journey saved with id = " + recorridoID);
+        Log.d("mdp", "Jornada guardada con id = " + idRecorrido);
     }
 
-    protected void changeGPSRequestFrequency(int time, int dist) {
-        // can be used ot change GPS request frequency for battery conservation
+    protected void cambiarFrecuenciaSolicitudGPS(int tiempo, int distancia) {
+        // se puede usar para cambiar la frecuencia de solicitud de GPS para conservación de batería
         try {
-            locationManager.removeUpdates(locationListener);
-            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, time, dist, locationListener);
-            Log.d("mdp", "New min time = " + time + ", min dist = " + dist);
-        } catch(SecurityException e) {
-            // don't have the permission to access GPS
-            Log.d("mdp", "No Permissions for GPS");
+            gestorLocalizacion.removeUpdates(oyenteLocalizacion);
+            gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, tiempo, distancia, oyenteLocalizacion);
+            Log.d("mdp", "Nuevo tiempo mínimo = " + tiempo + ", distancia mínima = " + distancia);
+        } catch (SecurityException e) {
+            // no se tiene permiso para acceder al GPS
+            Log.d("mdp", "No se tienen permisos para el GPS");
         }
     }
 
-
-    protected void notifyGPSEnabled() {
+    protected void notificarGPSHabilitado() {
         try {
-            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 3, 3, locationListener);
-        } catch(SecurityException e) {
-            // don't have the permission to access GPS
-            Log.d("mdp", "No Permissions for GPS");
+            gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, 3, 3, oyenteLocalizacion);
+        } catch (SecurityException e) {
+            // no se tiene permiso para acceder al GPS
+            Log.d("mdp", "No se tienen permisos para el GPS");
         }
     }
 
-    private String getDateTime() {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        return formatter.format(date);
+    private String obtenerFechaHora() {
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+        Date fecha = new Date();
+        return formato.format(fecha);
     }
 
-    public class LocationServiceBinder extends Binder {
+    public class EnlaceServicioLocalizacion extends Binder {
 
-        public float getDistance() {
-            return Localizacion.this.getDistance();
+        public float obtenerDistancia() {
+            return Localizacion.this.obtenerDistancia();
         }
 
-        public double getDuration() {
-            return Localizacion.this.getDuration();
+        public double obtenerDuracion() {
+            return Localizacion.this.obtenerDuracion();
         }
 
-        public boolean currentlyTracking() {return Localizacion.this.currentlyTracking();}
-
-        public void playJourney() {
-            Localizacion.this.playJourney();
+        public boolean rastreoActivo() {
+            return Localizacion.this.rastreoActivo();
         }
 
-        public void saveJourney() {
-            Localizacion.this.saveJourney();
+        public void iniciarRecorrido() {
+            Localizacion.this.iniciarRecorrido();
         }
 
-        public void notifyGPSEnabled() { Localizacion.this.notifyGPSEnabled();}
+        public void guardarRecorrido() {
+            Localizacion.this.guardarRecorrido();
+        }
 
-        public void changeGPSRequestFrequency(int time, int dist) {
-            Localizacion.this.changeGPSRequestFrequency(time, dist);}
+        public void notificarGPS() {
+            Localizacion.this.notificarGPSHabilitado();
+        }
+
+        public void cambiarSolicitudGPS(int tiempo, int distancia) {
+            Localizacion.this.cambiarFrecuenciaSolicitudGPS(tiempo, distancia);
+        }
     }
 }
+

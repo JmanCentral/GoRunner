@@ -15,16 +15,19 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 public class Viajes extends AppCompatActivity {
     private GifPlayer gif;
-    private Localizacion.LocationServiceBinder locationService;
+    private Localizacion.EnlaceServicioLocalizacion locationService;
 
     private TextView distanciaTexto;
     private TextView velocidadPromedioTexto;
@@ -34,13 +37,46 @@ public class Viajes extends AppCompatActivity {
     private Button botonDetener;
     private static final int PERMISSION_GPS_CODE = 1;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_viajes);
+
+        if (!isLocationEnabled()) {
+            showLocationDisabledAlert();
+        }
+
+        gif = findViewById(R.id.gif);
+        gif.setGifImageResource(R.drawable.atleta31);
+        gif.pausar();
+
+        distanciaTexto = findViewById(R.id.distanceText);
+        duracionTexto = findViewById(R.id.durationText);
+        velocidadPromedioTexto = findViewById(R.id.avgSpeedText);
+
+        botonIniciar = findViewById(R.id.startButton);
+        botonDetener = findViewById(R.id.stopButton);
+
+        // conectar al servicio para ver si actualmente se está rastreando antes de habilitar un botón
+        botonDetener.setEnabled(false);
+        botonIniciar.setEnabled(false);
+
+
+        handlePermissions();
+
+        startService(new Intent(this, Localizacion.class));
+        bindService(
+                new Intent(this, Localizacion.class), lsc, Context.BIND_AUTO_CREATE);
+    }
+
+
     // revisará el servicio de ubicación para obtener la distancia y la duración
     private Handler postBack = new Handler();
 
     private ServiceConnection lsc = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            locationService = (Localizacion.LocationServiceBinder) iBinder;
+            locationService = (Localizacion.EnlaceServicioLocalizacion) iBinder;
 
             // si actualmente se está rastreando, habilitar el botón de detener y deshabilitar el de iniciar
             initButtons();
@@ -50,9 +86,9 @@ public class Viajes extends AppCompatActivity {
                 public void run() {
                     while (locationService != null) {
                         // obtener la distancia y duración desde el servicio
-                        float d = (float) locationService.getDuration();
+                        float d = (float) locationService.obtenerDuracion();
                         long duracion = (long) d;  // en segundos
-                        float distancia = locationService.getDistance();
+                        float distancia = locationService.obtenerDistancia();
 
                         long horas = duracion / 3600;
                         long minutos = (duracion % 3600) / 60;
@@ -103,7 +139,7 @@ public class Viajes extends AppCompatActivity {
         }
 
         // si actualmente se está rastreando, habilitar el botón de detener y deshabilitar el de iniciar
-        if(locationService != null && locationService.currentlyTracking()) {
+        if(locationService != null && locationService.rastreoActivo()) {
             botonDetener.setEnabled(true);
             botonIniciar.setEnabled(false);
             gif.reproducir();
@@ -114,54 +150,19 @@ public class Viajes extends AppCompatActivity {
     }
 
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_viajes);
 
-        gif = findViewById(R.id.gif);
-        gif.setGifImageResource(R.drawable.atleta31);
-        gif.pausar();
-
-        distanciaTexto = findViewById(R.id.distanceText);
-        duracionTexto = findViewById(R.id.durationText);
-        velocidadPromedioTexto = findViewById(R.id.avgSpeedText);
-
-        botonIniciar = findViewById(R.id.startButton);
-        botonDetener = findViewById(R.id.stopButton);
-
-        // conectar al servicio para ver si actualmente se está rastreando antes de habilitar un botón
-        botonDetener.setEnabled(false);
-        botonIniciar.setEnabled(false);
-
-        // registrar el receptor de difusión para recibir notificaciones de batería baja
-        try {
-            Receptor receptor = new Receptor();
-            registerReceiver(receptor, new IntentFilter(Intent.ACTION_BATTERY_LOW));
-        } catch(IllegalArgumentException e) {
-        }
-
-        handlePermissions();
-
-        // iniciar el servicio para que persista fuera de la duración de esta actividad
-        // y también vincularse a él para tener control sobre el servicio
-        startService(new Intent(this, Localizacion.class));
-        bindService(
-                new Intent(this, Localizacion.class), lsc, Context.BIND_AUTO_CREATE);
-    }
 
     public void onClickPlay(View view) {
         gif.reproducir();
         // iniciar el temporizador y el rastreo de ubicaciones GPS
-        locationService.playJourney();
+        locationService.iniciarRecorrido();
         botonIniciar.setEnabled(false);
         botonDetener.setEnabled(true);
     }
 
     public void onClickStop(View view) {
-        // guardar el viaje actual en la base de datos
-        float distancia = locationService.getDistance();
-        locationService.saveJourney();
+        float distancia = locationService.obtenerDistancia();
+        locationService.guardarRecorrido();
 
         botonIniciar.setEnabled(false);
         botonDetener.setEnabled(false);
@@ -170,17 +171,39 @@ public class Viajes extends AppCompatActivity {
 
         DialogFragment modal = FinishedTrackingDialogue.newInstance(String.format("%.2f KM", distancia));
         modal.show(getSupportFragmentManager(), "Finished");
+
+        long idViaje = obtenerIdUltimoViaje(); // Método para obtener el ID del último viaje
+
+        // Crear un Intent para iniciar la actividad EditarCarrera
+        Intent intent = new Intent(this, EditarCarrera.class);
+        intent.putExtra("idViaje", idViaje);  // Pasar el ID del viaje al Activity de edición
+        startActivity(intent);
+
+    }
+
+    private long obtenerIdUltimoViaje() {
+        long idUltimoViaje = -1;
+
+        // Modificamos la consulta para usar 'recorridoID' en lugar de '_id'
+        Cursor cursor = getContentResolver().query(
+                RecorridosObtenidos.uriRecorrido,
+                new String[]{"recorridoID"}, // Usamos 'recorridoID' en lugar de '_id'
+                null,
+                null,
+                "recorridoID DESC LIMIT 1" // Ordenamos por 'recorridoID' en orden descendente
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            idUltimoViaje = cursor.getLong(cursor.getColumnIndex("recorridoID")); // Usamos 'recorridoID'
+            cursor.close();
+        }
+
+        return idUltimoViaje;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        try {
-            Receptor receptor = new Receptor();
-            unregisterReceiver(receptor);
-        } catch(IllegalArgumentException e) {
-        }
 
         if(lsc != null) {
             unbindService(lsc);
@@ -216,22 +239,17 @@ public class Viajes extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int reqCode, String[] permissions, int[] results) {
-        switch(reqCode) {
-            case PERMISSION_GPS_CODE:
-                if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permiso concedido
-                    initButtons();
-                    if(locationService != null) {
-                        locationService.notifyGPSEnabled();
-                    }
-                } else {
-                    // permiso denegado, deshabilitar los botones de rastreo GPS
-                    botonDetener.setEnabled(false);
-                    botonIniciar.setEnabled(false);
+        if (reqCode == PERMISSION_GPS_CODE) {
+            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permiso concedido
+                initButtons();
+                if (locationService != null) {
+                    locationService.notificarGPS();
                 }
-                return;
+            }
         }
     }
+
 
     public static class NoPermissionDialogue extends DialogFragment {
         public static NoPermissionDialogue newInstance() {
@@ -251,13 +269,37 @@ public class Viajes extends AppCompatActivity {
                     })
                     .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            // el diálogo fue cancelado
                         }
                     });
-            // Crear el objeto AlertDialog y devolverlo
             return builder.create();
         }
     }
+
+    private boolean isLocationEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    private void showLocationDisabledAlert() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("La ubicación está deshabilitada. ¿Deseas habilitarla?")
+                .setCancelable(false)
+                .setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+
 
     private void handlePermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
