@@ -77,8 +77,8 @@
 
         <ImageView
             android:id="@+id/Fotico"
-            android:layout_width="157dp"
-            android:layout_height="140dp"
+            android:layout_width="302dp"
+            android:layout_height="231dp"
             android:layout_marginTop="12dp"
             app:srcCompat="@drawable/icono" />
 
