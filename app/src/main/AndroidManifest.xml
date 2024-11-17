@@ -30,7 +30,7 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".EstadisticasActivity" />
+        <activity android:name=".pesoActivity" />
         <activity android:name=".MapsActivity" />
         <activity android:name=".EditarCarrera" />
         <activity android:name=".VerViajeEspecifico" />
