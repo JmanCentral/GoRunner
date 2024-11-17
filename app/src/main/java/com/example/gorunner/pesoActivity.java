@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -25,13 +26,14 @@ public class pesoActivity extends AppCompatActivity {
         // Obtener el valor del peso del EditText y convertirlo a Float
         Float pesoValue = Float.parseFloat(peso.getText().toString());
 
-        // Crear un Intent para la Activity de destino
-        Intent intent = new Intent(pesoActivity.this, Viajes.class);
-        Intent intent2 = new Intent(pesoActivity.this, Localizacion.class);
+        // Guardar el peso en SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putFloat("peso", pesoValue);
+        editor.apply(); // Guardar los cambios
 
-        intent.putExtra("peso", pesoValue);
-        intent2.putExtra("peso", pesoValue);
-
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 
 }

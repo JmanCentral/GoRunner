@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ComponentName;
@@ -14,6 +15,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.LocationManager;
@@ -32,11 +34,13 @@ public class Viajes extends AppCompatActivity {
     private TextView distanciaTexto;
     private TextView velocidadPromedioTexto;
     private TextView duracionTexto;
+    private TextView caloriasPromedio;
 
     private Button botonIniciar;
     private Button botonDetener;
     private static final int PERMISSION_GPS_CODE = 1;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +50,7 @@ public class Viajes extends AppCompatActivity {
             showLocationDisabledAlert();
         }
 
+
         gif = findViewById(R.id.gif);
         gif.setGifImageResource(R.drawable.atleta31);
         gif.pausar();
@@ -53,6 +58,7 @@ public class Viajes extends AppCompatActivity {
         distanciaTexto = findViewById(R.id.distanceText);
         duracionTexto = findViewById(R.id.durationText);
         velocidadPromedioTexto = findViewById(R.id.avgSpeedText);
+        caloriasPromedio = findViewById(R.id.avgSpeedText2);
 
         botonIniciar = findViewById(R.id.startButton);
         botonDetener = findViewById(R.id.stopButton);
@@ -98,9 +104,16 @@ public class Viajes extends AppCompatActivity {
                             velocidadPromedio = distancia / (d / 3600);
                         }
 
+                        SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
+                        float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
+
+                        // Calcular calorías usando el método del servicio
+                        float caloriasQuemadas = locationService.obtenerCalorias(pesoRecuperado);
+
                         final String tiempo = String.format("%02d:%02d:%02d", horas, minutos, segundos);
                         final String dist = String.format("%.2f KM", distancia);
                         final String promedio = String.format("%.2f KM/H", velocidadPromedio);
+                        final String calorias = String.format("%.2f CAL", caloriasQuemadas);
 
                         postBack.post(new Runnable() {
                             @Override
@@ -109,6 +122,7 @@ public class Viajes extends AppCompatActivity {
                                 duracionTexto.setText(tiempo);
                                 velocidadPromedioTexto.setText(promedio);
                                 distanciaTexto.setText(dist);
+                                caloriasPromedio.setText(calorias);
                             }
                         });
 

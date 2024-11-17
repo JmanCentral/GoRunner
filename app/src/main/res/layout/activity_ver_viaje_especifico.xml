@@ -39,7 +39,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="307dp"
+            android:layout_height="345dp"
             android:layout_marginBottom="5dp"
             tools:layout_editor_absoluteY="8dp">
 
@@ -53,6 +53,18 @@
                 android:textColor="#0f4d8b"
                 android:textSize="18sp"
                 app:layout_constraintBaseline_toBaselineOf="@+id/textView9"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/caloriasquemadas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="25dp"
+                android:text="0.00 CAL"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/textView12"
                 app:layout_constraintEnd_toEndOf="parent" />
 
 
@@ -117,7 +129,7 @@
                 android:textColor="#0f4d8b"
                 android:textSize="18sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView9" />
+                app:layout_constraintTop_toBottomOf="@+id/textView12" />
 
 
             <TextView
@@ -145,6 +157,19 @@
                 android:textSize="18sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tv34" />
+
+            <TextView
+                android:id="@+id/textView12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="25dp"
+                android:text="Calorias quemadas"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textColor="#0f4d8b"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView9" />
 
             <TextView
                 android:id="@+id/tv34"

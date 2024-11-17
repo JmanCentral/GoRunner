@@ -28,5 +28,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(view);
     }
 
+    public void peso(View v) {
+        Intent stats = new Intent(MainActivity.this, pesoActivity.class);
+        startActivity(stats);
+    }
+
 
 }

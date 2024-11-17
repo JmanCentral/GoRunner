@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,6 +43,7 @@ public class Localizacion extends Service {
         gestorLocalizacion = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         oyenteLocalizacion = new MiLocalizacionListener();
         oyenteLocalizacion.grabarUbicaciones = false;
+
 
         try {
             gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, INTERVALO_TIEMPO, INTERVALO_DISTANCIA, oyenteLocalizacion);
@@ -123,6 +125,12 @@ public class Localizacion extends Service {
         tiempoFin = 0;
     }
 
+    protected float obtenerCalorias(float pesoUsuario) {
+        float distancia = obtenerDistancia(); // Obtiene la distancia desde la lógica existente
+        return pesoUsuario * distancia * 1.036f; // Fórmula para calorías quemadas
+    }
+
+
 
     /* Obtener la duración de la jornada actual */
     protected double obtenerDuracion() {
@@ -147,11 +155,15 @@ public class Localizacion extends Service {
 
     /* Guardar la jornada en la base de datos y detener el guardado de ubicaciones GPS, también elimina la notificación */
     protected void guardarRecorrido() {
-        // guardar jornada en la base de datos usando el proveedor de contenido
+
+        SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
+        float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
+
         ContentValues datosJornada = new ContentValues();
         datosJornada.put(RecorridosObtenidos.distancia_recorrido, obtenerDistancia());
         datosJornada.put(RecorridosObtenidos.duracion_recorrido, (long) obtenerDuracion());
         datosJornada.put(RecorridosObtenidos.fecha_recorrido, obtenerFechaHora());
+        datosJornada.put(RecorridosObtenidos.calorias_recorrido, obtenerCalorias(pesoRecuperado));
 
         long idRecorrido = Long.parseLong(getContentResolver().insert(RecorridosObtenidos.uriRecorrido, datosJornada).getLastPathSegment());
 
@@ -213,6 +225,10 @@ public class Localizacion extends Service {
 
         public double obtenerDuracion() {
             return Localizacion.this.obtenerDuracion();
+        }
+
+        public float obtenerCalorias(float pesoUsuario) {
+            return Localizacion.this.obtenerCalorias(pesoUsuario);
         }
 
         public boolean rastreoActivo() {

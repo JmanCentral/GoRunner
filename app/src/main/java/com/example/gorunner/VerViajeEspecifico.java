@@ -2,6 +2,7 @@ package com.example.gorunner;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -25,6 +26,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
     private TextView calificacionTV;
     private TextView comentarioTV;
     private TextView tituloTV;
+    private TextView caloriasTV;
 
     private long idViaje;
 
@@ -49,6 +51,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +67,10 @@ public class VerViajeEspecifico extends AppCompatActivity {
         calificacionTV = findViewById(R.id.ViewSingleJourney_ratingText);
         comentarioTV = findViewById(R.id.ViewSingleJourney_commentText);
         tituloTV = findViewById(R.id.ViewSingleJourney_titleText);
+        caloriasTV = findViewById(R.id.caloriasquemadas);
+
         idViaje = bundle.getLong("idViaje");
+
 
         llenarVista();
         getContentResolver().registerContentObserver(
@@ -97,6 +103,8 @@ public class VerViajeEspecifico extends AppCompatActivity {
         if (c.moveToFirst()) {
             double distancia = c.getDouble(c.getColumnIndex(RecorridosObtenidos.distancia_recorrido));
             long tiempo = c.getLong(c.getColumnIndex(RecorridosObtenidos.duracion_recorrido));
+            float calorias = c.getFloat(c.getColumnIndex(RecorridosObtenidos.calorias_recorrido));
+
             double velocidadPromedio = 0;
 
             if (tiempo != 0) {
@@ -110,6 +118,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
             distanciaTV.setText(String.format("%.2f KM", distancia));
             velocidadPromedioTV.setText(String.format("%.2f KM/H", velocidadPromedio));
             tiempoTV.setText(String.format("%02d:%02d:%02d", horas, minutos, segundos));
+            caloriasTV.setText(String.format("%.2f CAL", calorias));
 
             // La fecha se almacena como yyyy-mm-dd, convertir a dd-mm-yyyy
             String fecha = c.getString(c.getColumnIndex(RecorridosObtenidos.fecha_recorrido));
