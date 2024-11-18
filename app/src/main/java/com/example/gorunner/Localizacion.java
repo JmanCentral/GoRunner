@@ -209,6 +209,15 @@ public class Localizacion extends Service implements SensorEventListener {
         }
     }
 
+    protected void notificarGPSHabilitado() {
+        try {
+            gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, 3, 3, oyenteLocalizacion);
+        } catch (SecurityException e) {
+            // no se tiene permiso para acceder al GPS
+            Log.d("mdp", "No se tienen permisos para el GPS");
+        }
+    }
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // No se necesita implementar
@@ -237,6 +246,10 @@ public class Localizacion extends Service implements SensorEventListener {
 
         public void guardarRecorrido() {
             Localizacion.this.guardarRecorrido();
+        }
+
+        public void notificarGPSHabilitado() {
+            Localizacion.this.notificarGPSHabilitado();
         }
 
         public boolean rastreoActivo() {
