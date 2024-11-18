@@ -17,6 +17,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 "duracion BIGINT NOT NULL," +
                 "distancia REAL NOT NULL," +
                 "calorias REAL NOT NULL," +
+                "pasos INTEGER NOT NULL DEFAULT 0,"+
                 "fecha DATETIME NOT NULL," +
                 "nombre varchar(256) NOT NULL DEFAULT 'Recorrido guardado'," +
                 "calificacion INTEGER NOT NULL DEFAULT 1," +

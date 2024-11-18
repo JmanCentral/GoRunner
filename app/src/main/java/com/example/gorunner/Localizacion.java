@@ -1,5 +1,6 @@
 package com.example.gorunner;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -7,6 +8,11 @@ import android.app.Service;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +24,7 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,6 +33,10 @@ public class Localizacion extends Service {
     private LocationManager gestorLocalizacion;
     private MiLocalizacionListener oyenteLocalizacion;
     private final IBinder enlace = new EnlaceServicioLocalizacion();
+
+    private SensorManager sensorManager;
+    private Sensor sensorPasos;
+    private int pasosTotales = 0;
 
     private final String ID_CANAL = "100";
     private final int ID_NOTIFICACION = 001;
@@ -44,6 +55,16 @@ public class Localizacion extends Service {
         oyenteLocalizacion = new MiLocalizacionListener();
         oyenteLocalizacion.grabarUbicaciones = false;
 
+        // Inicializar SensorManager y el Sensor de pasos
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorPasos = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+
+        if (sensorPasos != null) {
+            sensorManager.registerListener(sensorListener, sensorPasos, SensorManager.SENSOR_DELAY_UI);
+        } else {
+            Log.d("mdp", "No se encuentra un sensor de pasos en este dispositivo");
+        }
+
 
         try {
             gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, INTERVALO_TIEMPO, INTERVALO_DISTANCIA, oyenteLocalizacion);
@@ -52,6 +73,23 @@ public class Localizacion extends Service {
             Log.d("mdp", "No se tienen permisos para el GPS");
         }
     }
+
+    private final SensorEventListener sensorListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
+                // El valor del evento contiene el total de pasos contados desde que el dispositivo fue encendido
+                pasosTotales = (int) event.values[0]; // Guardar el número de pasos
+                Log.d("Localizacion", "Pasos contabilizados: " + pasosTotales);
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            // No es necesario manejar los cambios de precisión en este caso
+        }
+    };
+
 
 
     private void agregarNotificacion() {
@@ -96,6 +134,11 @@ public class Localizacion extends Service {
     public IBinder onBind(Intent intent) {
         return enlace;
     }
+
+    public int obtenerPasosTotales() {
+        return pasosTotales;
+    }
+
 
     protected float obtenerDistancia() {
         return oyenteLocalizacion.obtenerDistanciaDeJornada();
@@ -167,6 +210,7 @@ public class Localizacion extends Service {
         datosJornada.put(RecorridosObtenidos.duracion_recorrido, (long) obtenerDuracion());
         datosJornada.put(RecorridosObtenidos.fecha_recorrido, obtenerFechaHora());
         datosJornada.put(RecorridosObtenidos.calorias_recorrido, obtenerCalorias(pesoRecuperado));
+        datosJornada.put(RecorridosObtenidos.pasos_recorrido, obtenerPasosTotales());
 
         long idRecorrido = Long.parseLong(getContentResolver().insert(RecorridosObtenidos.uriRecorrido, datosJornada).getLastPathSegment());
 
@@ -224,6 +268,10 @@ public class Localizacion extends Service {
 
         public float obtenerDistancia() {
             return Localizacion.this.obtenerDistancia();
+        }
+
+        public int obtenerPasosTotales() {
+            return Localizacion.this.obtenerPasosTotales();
         }
 
         public double obtenerDuracion() {

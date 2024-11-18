@@ -19,122 +19,133 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class Viajes extends AppCompatActivity {
-    private GifPlayer gif;
-    private Localizacion.EnlaceServicioLocalizacion locationService;
+    public class Viajes extends AppCompatActivity {
+        private GifPlayer gif;
+        private Localizacion.EnlaceServicioLocalizacion locationService;
 
-    private TextView distanciaTexto;
-    private TextView velocidadPromedioTexto;
-    private TextView duracionTexto;
-    private TextView caloriasPromedio;
+        private TextView distanciaTexto;
+        private TextView velocidadPromedioTexto;
+        private TextView duracionTexto;
+        private TextView caloriasPromedio;
+        private TextView pasosTotales;
 
-    private Button botonIniciar;
-    private Button botonDetener;
-    private static final int PERMISSION_GPS_CODE = 1;
+        private Button botonIniciar;
+        private Button botonDetener;
+        private static final int PERMISSION_GPS_CODE = 1;
+        private static final int PERMISSION_ACTIVITY_RECOGNITION_CODE = 2;
 
-    @SuppressLint("MissingInflatedId")
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_viajes);
+        @SuppressLint("MissingInflatedId")
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_viajes);
 
-        if (!isLocationEnabled()) {
-            showLocationDisabledAlert();
+            if (!isLocationEnabled()) {
+                showLocationDisabledAlert();
+            }
+
+
+            gif = findViewById(R.id.gif);
+            gif.setGifImageResource(R.drawable.atleta31);
+            gif.pausar();
+
+            distanciaTexto = findViewById(R.id.distanceText);
+            duracionTexto = findViewById(R.id.durationText);
+            velocidadPromedioTexto = findViewById(R.id.avgSpeedText);
+            caloriasPromedio = findViewById(R.id.avgSpeedText2);
+            pasosTotales = findViewById(R.id.pasos);
+
+            botonIniciar = findViewById(R.id.startButton);
+            botonDetener = findViewById(R.id.stopButton);
+
+            botonDetener.setEnabled(false);
+            botonIniciar.setEnabled(false);
+
+
+            handlePermissions();
+            handlePermissions1();
+
+            startService(new Intent(this, Localizacion.class));
+            bindService(
+                    new Intent(this, Localizacion.class), lsc, Context.BIND_AUTO_CREATE);
         }
 
 
-        gif = findViewById(R.id.gif);
-        gif.setGifImageResource(R.drawable.atleta31);
-        gif.pausar();
+        // revisará el servicio de ubicación para obtener la distancia y la duración
+        private Handler postBack = new Handler();
 
-        distanciaTexto = findViewById(R.id.distanceText);
-        duracionTexto = findViewById(R.id.durationText);
-        velocidadPromedioTexto = findViewById(R.id.avgSpeedText);
-        caloriasPromedio = findViewById(R.id.avgSpeedText2);
+        private ServiceConnection lsc = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                locationService = (Localizacion.EnlaceServicioLocalizacion) iBinder;
 
-        botonIniciar = findViewById(R.id.startButton);
-        botonDetener = findViewById(R.id.stopButton);
+                // si actualmente se está rastreando, habilitar el botón de detener y deshabilitar el de iniciar
+                initButtons();
 
-        botonDetener.setEnabled(false);
-        botonIniciar.setEnabled(false);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (locationService != null) {
+                            // obtener la distancia y duración desde el servicio
+                            float d = (float) locationService.obtenerDuracion();
+                            long duracion = (long) d;  // en segundos
+                            float distancia = locationService.obtenerDistancia();
 
+                            final int pasos = locationService.obtenerPasosTotales();
+                            //Log.d("Viajes", "Pasos totales obtenidos: " + pasos);
 
-        handlePermissions();
+                            long horas = duracion / 3600;
+                            long minutos = (duracion % 3600) / 60;
+                            long segundos = duracion % 60;
 
-        startService(new Intent(this, Localizacion.class));
-        bindService(
-                new Intent(this, Localizacion.class), lsc, Context.BIND_AUTO_CREATE);
-    }
-
-
-    // revisará el servicio de ubicación para obtener la distancia y la duración
-    private Handler postBack = new Handler();
-
-    private ServiceConnection lsc = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            locationService = (Localizacion.EnlaceServicioLocalizacion) iBinder;
-
-            // si actualmente se está rastreando, habilitar el botón de detener y deshabilitar el de iniciar
-            initButtons();
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (locationService != null) {
-                        // obtener la distancia y duración desde el servicio
-                        float d = (float) locationService.obtenerDuracion();
-                        long duracion = (long) d;  // en segundos
-                        float distancia = locationService.obtenerDistancia();
-
-                        long horas = duracion / 3600;
-                        long minutos = (duracion % 3600) / 60;
-                        long segundos = duracion % 60;
-
-                        float velocidadPromedio = 0;
-                        if(d != 0) {
-                            velocidadPromedio = distancia / (d / 3600);
-                        }
-
-                        SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
-                        float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
-
-                        // Calcular calorías usando el método del servicio
-                        float caloriasQuemadas = locationService.obtenerCalorias(pesoRecuperado);
-
-                        final String tiempo = String.format("%02d:%02d:%02d", horas, minutos, segundos);
-                        final String dist = String.format("%.2f KM", distancia);
-                        final String promedio = String.format("%.2f KM/H", velocidadPromedio);
-                        final String calorias = String.format("%.2f CAL", caloriasQuemadas);
-
-                        postBack.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                // enviar cambios a la UI en el hilo principal
-                                duracionTexto.setText(tiempo);
-                                velocidadPromedioTexto.setText(promedio);
-                                distanciaTexto.setText(dist);
-                                caloriasPromedio.setText(calorias);
+                            float velocidadPromedio = 0;
+                            if(d != 0) {
+                                velocidadPromedio = distancia / (d / 3600);
                             }
-                        });
 
-                        try {
-                            Thread.sleep(500);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                            SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
+                            float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
+
+                            // Calcular calorías usando el método del servicio
+                            float caloriasQuemadas = locationService.obtenerCalorias(pesoRecuperado);
+
+                            final String tiempo = String.format("%02d:%02d:%02d", horas, minutos, segundos);
+                            final String dist = String.format("%.2f KM", distancia);
+                            final String promedio = String.format("%.2f KM/H", velocidadPromedio);
+                            final String calorias = String.format("%.2f CAL", caloriasQuemadas);
+
+                            postBack.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // enviar cambios a la UI en el hilo principal
+                                    duracionTexto.setText(tiempo);
+                                    velocidadPromedioTexto.setText(promedio);
+                                    distanciaTexto.setText(dist);
+                                    caloriasPromedio.setText(calorias);
+                                    pasosTotales.setText(String.valueOf(pasos));
+
+                                }
+                            });
+
+                            try {
+                                Thread.sleep(500);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
-                }
-            }).start();
-        }
+                }).start();
+            }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
@@ -261,6 +272,15 @@ public class Viajes extends AppCompatActivity {
                 }
             }
         }
+
+        if (reqCode == PERMISSION_ACTIVITY_RECOGNITION_CODE) {
+            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permiso de reconocimiento de actividad concedido
+                Log.d("Viajes", "Permiso de reconocimiento de actividad concedido");
+            } else {
+                Log.d("Viajes", "Permiso de reconocimiento de actividad no concedido");
+            }
+        }
     }
 
 
@@ -324,4 +344,18 @@ public class Viajes extends AppCompatActivity {
             }
         }
     }
+
+        private void handlePermissions1() {
+            // Verificar permisos de reconocimiento de actividad (sensor de pasos)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // Solo en Android 10 o superior
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
+                            PERMISSION_ACTIVITY_RECOGNITION_CODE);
+                } else {
+                    Log.d("Viajes", "Permiso de reconocimiento de actividad concedido");
+                }
+            }
+        }
 }
