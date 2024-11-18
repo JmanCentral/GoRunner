@@ -53,21 +53,6 @@ public class Localizacion extends Service {
         }
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        super.onStartCommand(intent, flags, startId);
-
-        // el receptor de difusión puede enviar mensajes sobre batería baja en los que el paquete contiene información de la batería
-        if (intent != null) {
-            Bundle paquete = intent.getExtras();
-            if (paquete != null && paquete.getBoolean("bateria")) {
-                // reducir la frecuencia de solicitud del GPS
-                cambiarFrecuenciaSolicitudGPS(INTERVALO_TIEMPO * 3, INTERVALO_DISTANCIA * 3);
-            }
-        }
-
-        return START_NOT_STICKY;
-    }
 
     private void agregarNotificacion() {
         NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -126,13 +111,32 @@ public class Localizacion extends Service {
     }
 
     protected float obtenerCalorias(float pesoUsuario) {
-        float distancia = obtenerDistancia(); // Obtiene la distancia desde la lógica existente
-        return pesoUsuario * distancia * 1.036f; // Fórmula para calorías quemadas
+        float distancia = obtenerDistancia(); // Obtener distancia
+        double duracionHoras = obtenerDuracion() / 3600.0; // Convertir duración a horas
+
+        if (duracionHoras == 0) {
+            return 0.0f; // Evitar división por cero
+        }
+
+        // Calcular la velocidad (km/h)
+        double velocidad = distancia / duracionHoras;
+
+        // Determinar MET basado en la velocidad
+        float MET;
+        if (velocidad < 5) {
+            MET = 3.5f; // Caminar
+        } else if (velocidad < 8) {
+            MET = 6.0f; // Trotar
+        } else {
+            MET = 9.0f; // Correr
+        }
+
+        // Calcular calorías quemadas (en minutos)
+        double duracionMinutos = obtenerDuracion() / 60.0; // Convertir duración a minutos
+        return (float) (MET * pesoUsuario * 0.0175 * duracionMinutos);
     }
 
 
-
-    /* Obtener la duración de la jornada actual */
     protected double obtenerDuracion() {
         if (tiempoInicio == 0) {
             return 0.0;
@@ -141,7 +145,6 @@ public class Localizacion extends Service {
         long tiempoFinal = SystemClock.elapsedRealtime();
 
         if (tiempoFin != 0) {
-            // se ha llamado a guardarJornada, hasta que se llame a iniciarJornada se muestra un tiempo constante
             tiempoFinal = tiempoFin;
         }
 

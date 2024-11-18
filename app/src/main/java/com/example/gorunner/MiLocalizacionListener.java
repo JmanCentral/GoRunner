@@ -21,12 +21,15 @@ public class MiLocalizacionListener implements LocationListener {
     }
 
     public float obtenerDistanciaDeJornada() {
-        if(ubicaciones.size() <= 1) {
-            return 0;
+        if (ubicaciones.size() < 2) {
+            return 0;  // Si no hay suficientes ubicaciones, no se puede calcular la distancia
         }
 
-        // distance from first location to last recorded location in km
-        return ubicaciones.get(0).distanceTo(ubicaciones.get(ubicaciones.size() - 1)) / 1000;
+        float totalDistance = 0;
+        for (int i = 0; i < ubicaciones.size() - 1; i++) {
+            totalDistance += ubicaciones.get(i).distanceTo(ubicaciones.get(i + 1));
+        }
+        return totalDistance / 1000;
     }
 
     public ArrayList<Location> obtenerUbicaciones() {
