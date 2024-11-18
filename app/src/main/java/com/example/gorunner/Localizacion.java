@@ -29,19 +29,21 @@ import androidx.core.content.ContextCompat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Localizacion extends Service {
+public class Localizacion extends Service implements SensorEventListener {
     private LocationManager gestorLocalizacion;
     private MiLocalizacionListener oyenteLocalizacion;
     private final IBinder enlace = new EnlaceServicioLocalizacion();
-
-    private SensorManager sensorManager;
-    private Sensor sensorPasos;
-    private int pasosTotales = 0;
 
     private final String ID_CANAL = "100";
     private final int ID_NOTIFICACION = 001;
     private long tiempoInicio = 0;
     private long tiempoFin = 0;
+
+    private SensorManager sensorManager;
+    private Sensor stepCounterSensor;
+    private int pasosInicio = 0;
+    private int pasosActuales = 0;
+    private boolean podometroActivo = false;
 
     final int INTERVALO_TIEMPO = 3;
     final int INTERVALO_DISTANCIA = 3;
@@ -55,42 +57,20 @@ public class Localizacion extends Service {
         oyenteLocalizacion = new MiLocalizacionListener();
         oyenteLocalizacion.grabarUbicaciones = false;
 
-        // Inicializar SensorManager y el Sensor de pasos
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorPasos = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
-
-        if (sensorPasos != null) {
-            sensorManager.registerListener(sensorListener, sensorPasos, SensorManager.SENSOR_DELAY_UI);
-        } else {
-            Log.d("mdp", "No se encuentra un sensor de pasos en este dispositivo");
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager != null) {
+            stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+            if (stepCounterSensor == null) {
+                Log.d("mdp", "Sensor de pasos no disponible");
+            }
         }
-
 
         try {
             gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, INTERVALO_TIEMPO, INTERVALO_DISTANCIA, oyenteLocalizacion);
         } catch (SecurityException e) {
-            // no se tiene permiso para acceder al GPS
             Log.d("mdp", "No se tienen permisos para el GPS");
         }
     }
-
-    private final SensorEventListener sensorListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
-                // El valor del evento contiene el total de pasos contados desde que el dispositivo fue encendido
-                pasosTotales = (int) event.values[0]; // Guardar el número de pasos
-                Log.d("Localizacion", "Pasos contabilizados: " + pasosTotales);
-            }
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            // No es necesario manejar los cambios de precisión en este caso
-        }
-    };
-
-
 
     private void agregarNotificacion() {
         NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -106,7 +86,7 @@ public class Localizacion extends Service {
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent intentoPendiente = PendingIntent.getActivity(this, 0, intent, 0);
+        PendingIntent intentoPendiente = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Builder constructorNotificacion = new NotificationCompat.Builder(this, ID_CANAL)
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentTitle("Rastreo de Jornada")
@@ -116,13 +96,19 @@ public class Localizacion extends Service {
         gestorNotificaciones.notify(ID_NOTIFICACION, constructorNotificacion.build());
     }
 
+
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // el usuario ha cerrado la aplicación, cancelar la jornada actual y detener el rastreo del GPS
         gestorLocalizacion.removeUpdates(oyenteLocalizacion);
         oyenteLocalizacion = null;
         gestorLocalizacion = null;
+
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
+        podometroActivo = false;
 
         NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         gestorNotificaciones.cancel(ID_NOTIFICACION);
@@ -135,50 +121,24 @@ public class Localizacion extends Service {
         return enlace;
     }
 
-    public int obtenerPasosTotales() {
-        return pasosTotales;
-    }
-
-
     protected float obtenerDistancia() {
         return oyenteLocalizacion.obtenerDistanciaDeJornada();
     }
 
-    /* Mostrar notificación e iniciar grabación de ubicaciones GPS para una nueva jornada, también iniciar el temporizador */
     protected void iniciarRecorrido() {
         agregarNotificacion();
         oyenteLocalizacion.nuevaJornada();
         oyenteLocalizacion.grabarUbicaciones = true;
         tiempoInicio = SystemClock.elapsedRealtime();
         tiempoFin = 0;
-    }
 
-    protected float obtenerCalorias(float pesoUsuario) {
-        float distancia = obtenerDistancia(); // Obtener distancia
-        double duracionHoras = obtenerDuracion() / 3600.0; // Convertir duración a horas
-
-        if (duracionHoras == 0) {
-            return 0.0f; // Evitar división por cero
+        if (stepCounterSensor != null) {
+            sensorManager.registerListener(this, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            podometroActivo = true;
+            pasosInicio = 0;
+            pasosActuales = 0;
         }
-
-        // Calcular la velocidad (km/h)
-        double velocidad = distancia / duracionHoras;
-
-        // Determinar MET basado en la velocidad
-        float MET;
-        if (velocidad < 5) {
-            MET = 3.5f; // Caminar
-        } else if (velocidad < 8) {
-            MET = 6.0f; // Trotar
-        } else {
-            MET = 9.0f; // Correr
-        }
-
-        // Calcular calorías quemadas (en minutos)
-        double duracionMinutos = obtenerDuracion() / 60.0; // Convertir duración a minutos
-        return (float) (MET * pesoUsuario * 0.0175 * duracionMinutos);
     }
-
 
     protected double obtenerDuracion() {
         if (tiempoInicio == 0) {
@@ -195,95 +155,36 @@ public class Localizacion extends Service {
         return milisegundosTranscurridos / 1000.0;
     }
 
-    protected boolean rastreoActivo() {
-        return tiempoInicio != 0;
+    protected int obtenerPasos() {
+        return pasosActuales - pasosInicio;
     }
 
-    /* Guardar la jornada en la base de datos y detener el guardado de ubicaciones GPS, también elimina la notificación */
-    protected void guardarRecorrido() {
-
-        SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
-        float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
-
-        ContentValues datosJornada = new ContentValues();
-        datosJornada.put(RecorridosObtenidos.distancia_recorrido, obtenerDistancia());
-        datosJornada.put(RecorridosObtenidos.duracion_recorrido, (long) obtenerDuracion());
-        datosJornada.put(RecorridosObtenidos.fecha_recorrido, obtenerFechaHora());
-        datosJornada.put(RecorridosObtenidos.calorias_recorrido, obtenerCalorias(pesoRecuperado));
-        datosJornada.put(RecorridosObtenidos.pasos_recorrido, obtenerPasosTotales());
-
-        long idRecorrido = Long.parseLong(getContentResolver().insert(RecorridosObtenidos.uriRecorrido, datosJornada).getLastPathSegment());
-
-        // para cada ubicación perteneciente a esta jornada, guardarla en la tabla de ubicaciones vinculada a esta jornada
-        for (Location ubicacion : oyenteLocalizacion.obtenerUbicaciones()) {
-            ContentValues datosUbicacion = new ContentValues();
-            datosUbicacion.put(RecorridosObtenidos.recorridoId, idRecorrido);
-            datosUbicacion.put(RecorridosObtenidos.altitud_recorrido, ubicacion.getAltitude());
-            datosUbicacion.put(RecorridosObtenidos.latitud_recorrido, ubicacion.getLatitude());
-            datosUbicacion.put(RecorridosObtenidos.longitud_recorrido, ubicacion.getLongitude());
-
-            getContentResolver().insert(RecorridosObtenidos.uriUbicacion, datosUbicacion);
-        }
-
-        NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        gestorNotificaciones.cancel(ID_NOTIFICACION);
-
-        // reiniciar el estado limpiando ubicaciones, detener la grabación, reiniciar tiempoInicio
-        oyenteLocalizacion.grabarUbicaciones = false;
-        tiempoFin = SystemClock.elapsedRealtime();
-        tiempoInicio = 0;
-        oyenteLocalizacion.nuevaJornada();
-
-        Log.d("mdp", "Jornada guardada con id = " + idRecorrido);
-    }
-
-    protected void cambiarFrecuenciaSolicitudGPS(int tiempo, int distancia) {
-        // se puede usar para cambiar la frecuencia de solicitud de GPS para conservación de batería
-        try {
-            gestorLocalizacion.removeUpdates(oyenteLocalizacion);
-            gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, tiempo, distancia, oyenteLocalizacion);
-            Log.d("mdp", "Nuevo tiempo mínimo = " + tiempo + ", distancia mínima = " + distancia);
-        } catch (SecurityException e) {
-            // no se tiene permiso para acceder al GPS
-            Log.d("mdp", "No se tienen permisos para el GPS");
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
+            if (pasosInicio == 0) {
+                pasosInicio = (int) event.values[0];
+            }
+            pasosActuales = (int) event.values[0];
         }
     }
 
-    protected void notificarGPSHabilitado() {
-        try {
-            gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, 3, 3, oyenteLocalizacion);
-        } catch (SecurityException e) {
-            // no se tiene permiso para acceder al GPS
-            Log.d("mdp", "No se tienen permisos para el GPS");
-        }
-    }
-
-    private String obtenerFechaHora() {
-        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
-        Date fecha = new Date();
-        return formato.format(fecha);
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // No se necesita implementar
     }
 
     public class EnlaceServicioLocalizacion extends Binder {
-
         public float obtenerDistancia() {
             return Localizacion.this.obtenerDistancia();
-        }
-
-        public int obtenerPasosTotales() {
-            return Localizacion.this.obtenerPasosTotales();
         }
 
         public double obtenerDuracion() {
             return Localizacion.this.obtenerDuracion();
         }
 
-        public float obtenerCalorias(float pesoUsuario) {
-            return Localizacion.this.obtenerCalorias(pesoUsuario);
-        }
-
-        public boolean rastreoActivo() {
-            return Localizacion.this.rastreoActivo();
+        public int obtenerPasos() {
+            return Localizacion.this.obtenerPasos();
         }
 
         public void iniciarRecorrido() {
@@ -294,12 +195,8 @@ public class Localizacion extends Service {
             Localizacion.this.guardarRecorrido();
         }
 
-        public void notificarGPS() {
-            Localizacion.this.notificarGPSHabilitado();
-        }
-
-        public void cambiarSolicitudGPS(int tiempo, int distancia) {
-            Localizacion.this.cambiarFrecuenciaSolicitudGPS(tiempo, distancia);
+        public boolean rastreoActivo() {
+            return tiempoInicio != 0;
         }
     }
 }
