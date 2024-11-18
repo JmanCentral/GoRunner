@@ -142,11 +142,7 @@ public class EditarCarrera extends AppCompatActivity {
 
     private void abrirCamara() {
         Intent intentCapturarImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (intentCapturarImagen.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(intentCapturarImagen, SOLICITUD_CAPTURAR_IMAGEN);
-        } else {
-            Toast.makeText(this, "Cámara no disponible", Toast.LENGTH_SHORT).show();
-        }
     }
 
 
@@ -238,8 +234,8 @@ public class EditarCarrera extends AppCompatActivity {
             return -1;
         }
 
-        if(calificacion < 0 || calificacion > 5) {
-            Toast.makeText(getApplicationContext(), "La calificación debe estar entre 0 y 5", Toast.LENGTH_SHORT).show();
+        if(calificacion < 0 || calificacion > 10) {
+            Toast.makeText(getApplicationContext(), "La calificación debe estar entre 0 y 10", Toast.LENGTH_SHORT).show();
             return -1;
         }
         return calificacion;

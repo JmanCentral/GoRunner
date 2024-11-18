@@ -1,30 +1,26 @@
 package com.example.gorunner;
 
-import android.Manifest;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Binder;
+import android.os.Build;
+import android.os.IBinder;
+import android.os.SystemClock;
+import android.util.Log;
+import androidx.core.app.NotificationCompat;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Binder;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.content.Context;
-import android.location.Location;
-import android.location.LocationManager;
-import android.os.SystemClock;
-import android.util.Log;
-
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -96,8 +92,6 @@ public class Localizacion extends Service implements SensorEventListener {
         gestorNotificaciones.notify(ID_NOTIFICACION, constructorNotificacion.build());
     }
 
-
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -159,6 +153,52 @@ public class Localizacion extends Service implements SensorEventListener {
         return pasosActuales - pasosInicio;
     }
 
+    protected void guardarRecorrido() {
+        SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
+        float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
+
+        ContentValues datosJornada = new ContentValues();
+        datosJornada.put(RecorridosObtenidos.distancia_recorrido, obtenerDistancia());
+        datosJornada.put(RecorridosObtenidos.duracion_recorrido, (long) obtenerDuracion());
+        datosJornada.put(RecorridosObtenidos.fecha_recorrido, obtenerFechaHora());
+        datosJornada.put(RecorridosObtenidos.   calorias_recorrido, obtenerCalorias(pesoRecuperado));
+        datosJornada.put(RecorridosObtenidos.pasos_recorrido, obtenerPasos());
+
+        long idRecorrido = Long.parseLong(getContentResolver().insert(RecorridosObtenidos.uriRecorrido, datosJornada).getLastPathSegment());
+
+        for (Location ubicacion : oyenteLocalizacion.obtenerUbicaciones()) {
+            ContentValues datosUbicacion = new ContentValues();
+            datosUbicacion.put(RecorridosObtenidos.recorridoId, idRecorrido);
+            datosUbicacion.put(RecorridosObtenidos.altitud_recorrido, ubicacion.getAltitude());
+            datosUbicacion.put(RecorridosObtenidos.latitud_recorrido, ubicacion.getLatitude());
+            datosUbicacion.put(RecorridosObtenidos.longitud_recorrido, ubicacion.getLongitude());
+
+            getContentResolver().insert(RecorridosObtenidos.uriUbicacion, datosUbicacion);
+        }
+
+        NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        gestorNotificaciones.cancel(ID_NOTIFICACION);
+
+        oyenteLocalizacion.grabarUbicaciones = false;
+        tiempoFin = SystemClock.elapsedRealtime();
+        tiempoInicio = 0;
+        oyenteLocalizacion.nuevaJornada();
+
+        Log.d("mdp", "Jornada guardada con id = " + idRecorrido);
+    }
+
+    private String obtenerFechaHora() {
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+        Date fecha = new Date();
+        return formato.format(fecha);
+    }
+
+    private float obtenerCalorias(float peso) {
+
+        float distancia = obtenerDistancia();
+        return  peso * distancia * 1.036f;
+    }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
@@ -185,6 +225,10 @@ public class Localizacion extends Service implements SensorEventListener {
 
         public int obtenerPasos() {
             return Localizacion.this.obtenerPasos();
+        }
+
+        public float obtenerCalorias(float peso) {
+            return Localizacion.this.obtenerCalorias(peso);
         }
 
         public void iniciarRecorrido() {

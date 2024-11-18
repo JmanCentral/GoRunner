@@ -28,8 +28,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
-    public class Viajes extends AppCompatActivity {
+public class Viajes extends AppCompatActivity {
         private GifPlayer gif;
         private Localizacion.EnlaceServicioLocalizacion locationService;
 
@@ -54,7 +55,6 @@ import android.widget.TextView;
                 showLocationDisabledAlert();
             }
 
-
             gif = findViewById(R.id.gif);
             gif.setGifImageResource(R.drawable.atleta31);
             gif.pausar();
@@ -73,7 +73,6 @@ import android.widget.TextView;
 
 
             handlePermissions();
-            handlePermissions1();
 
             startService(new Intent(this, Localizacion.class));
             bindService(
@@ -101,7 +100,7 @@ import android.widget.TextView;
                             long duracion = (long) d;  // en segundos
                             float distancia = locationService.obtenerDistancia();
 
-                            final int pasos = locationService.obtenerPasosTotales();
+                            final int pasos = locationService.obtenerPasos();
                             //Log.d("Viajes", "Pasos totales obtenidos: " + pasos);
 
                             long horas = duracion / 3600;
@@ -177,11 +176,26 @@ import android.widget.TextView;
 
 
     public void onClickPlay(View view) {
-        gif.reproducir();
-        // iniciar el temporizador y el rastreo de ubicaciones GPS
-        locationService.iniciarRecorrido();
-        botonIniciar.setEnabled(false);
-        botonDetener.setEnabled(true);
+        SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
+        float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
+
+        if (pesoRecuperado == 0.0f) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle("Peso no configurado");
+            alertDialogBuilder.setMessage("Por favor, configure su peso antes de iniciar la actividad.");
+            alertDialogBuilder.setPositiveButton("Configurar", (dialog, which) -> {
+                // Redirigir al usuario a la pantalla de configuración de peso
+                Intent intent = new Intent(this, pesoActivity.class);
+                startActivity(intent);
+            });
+        }
+        else {
+            gif.reproducir();
+            // Iniciar el temporizador y el rastreo de ubicaciones GPS
+            locationService.iniciarRecorrido();
+            botonIniciar.setEnabled(false);
+            botonDetener.setEnabled(true);
+        }
     }
 
     public void onClickStop(View view) {
@@ -200,7 +214,7 @@ import android.widget.TextView;
 
         // Crear un Intent para iniciar la actividad EditarCarrera
         Intent intent = new Intent(this, EditarCarrera.class);
-        intent.putExtra("idViaje", idViaje);  // Pasar el ID del viaje al Activity de edición
+        intent.putExtra("idViaje", idViaje);
         startActivity(intent);
 
     }
@@ -208,13 +222,13 @@ import android.widget.TextView;
     private long obtenerIdUltimoViaje() {
         long idUltimoViaje = -1;
 
-        // Modificamos la consulta para usar 'recorridoID' en lugar de '_id'
+
         Cursor cursor = getContentResolver().query(
                 RecorridosObtenidos.uriRecorrido,
-                new String[]{"recorridoID"}, // Usamos 'recorridoID' en lugar de '_id'
+                new String[]{"recorridoID"},
                 null,
                 null,
-                "recorridoID DESC LIMIT 1" // Ordenamos por 'recorridoID' en orden descendente
+                "recorridoID DESC LIMIT 1"
         );
 
         if (cursor != null && cursor.moveToFirst()) {
@@ -258,31 +272,6 @@ import android.widget.TextView;
             return builder.create();
         }
     }
-
-// MANEJO DE PERMISOS
-
-    @Override
-    public void onRequestPermissionsResult(int reqCode, String[] permissions, int[] results) {
-        if (reqCode == PERMISSION_GPS_CODE) {
-            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permiso concedido
-                initButtons();
-                if (locationService != null) {
-                    locationService.notificarGPS();
-                }
-            }
-        }
-
-        if (reqCode == PERMISSION_ACTIVITY_RECOGNITION_CODE) {
-            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permiso de reconocimiento de actividad concedido
-                Log.d("Viajes", "Permiso de reconocimiento de actividad concedido");
-            } else {
-                Log.d("Viajes", "Permiso de reconocimiento de actividad no concedido");
-            }
-        }
-    }
-
 
     public static class NoPermissionDialogue extends DialogFragment {
         public static NoPermissionDialogue newInstance() {
@@ -332,30 +321,59 @@ import android.widget.TextView;
         alert.show();
     }
 
-
-
-    private void handlePermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                DialogFragment modal = NoPermissionDialogue.newInstance();
-                modal.show(getSupportFragmentManager(), "Permissions");
+    private void requestPermission(String permission, int requestCode, String rationaleMessage) {
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                // Mostrar una explicación al usuario sobre por qué se necesita este permiso
+                new AlertDialog.Builder(this)
+                        .setMessage(rationaleMessage)
+                        .setPositiveButton("Aceptar", (dialog, which) ->
+                                ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode))
+                        .setNegativeButton("Cancelar", null)
+                        .create()
+                        .show();
             } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_GPS_CODE);
+                // Solicitar el permiso directamente
+                ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
             }
+        } else {
+            Log.d("Viajes", permission + " ya concedido.");
         }
     }
 
-        private void handlePermissions1() {
-            // Verificar permisos de reconocimiento de actividad (sensor de pasos)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // Solo en Android 10 o superior
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
-                            PERMISSION_ACTIVITY_RECOGNITION_CODE);
-                } else {
-                    Log.d("Viajes", "Permiso de reconocimiento de actividad concedido");
-                }
-            }
+    private void handlePermissions() {
+        requestPermission(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                PERMISSION_GPS_CODE,
+                "Se necesita acceso al GPS para rastrear tu ubicación."
+        );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // Reconocimiento de actividad solo en API 29+
+            requestPermission(
+                    Manifest.permission.ACTIVITY_RECOGNITION,
+                    PERMISSION_ACTIVITY_RECOGNITION_CODE,
+                    "Se necesita acceso al sensor de actividad para rastrear tus pasos."
+            );
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            switch (requestCode) {
+                case PERMISSION_GPS_CODE:
+                    Log.d("Viajes", "Permiso de GPS concedido.");
+                    break;
+                case PERMISSION_ACTIVITY_RECOGNITION_CODE:
+                    Log.d("Viajes", "Permiso de reconocimiento de actividad concedido.");
+                    break;
+            }
+        } else {
+            Log.d("Viajes", "Permiso no concedido para el código: " + requestCode);
+        }
+    }
+
+
 }

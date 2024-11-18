@@ -27,6 +27,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
     private TextView comentarioTV;
     private TextView tituloTV;
     private TextView caloriasTV;
+    private TextView pasosTV;
 
     private long idViaje;
 
@@ -68,6 +69,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
         comentarioTV = findViewById(R.id.ViewSingleJourney_commentText);
         tituloTV = findViewById(R.id.ViewSingleJourney_titleText);
         caloriasTV = findViewById(R.id.caloriasquemadas);
+        pasosTV = findViewById(R.id.pasospromedio);
 
         idViaje = bundle.getLong("idViaje");
 
@@ -96,7 +98,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
     }
 
     private void llenarVista() {
-        // Usar el proveedor de contenido para cargar datos de la base de datos y mostrarlos en las vistas de texto
+
         Cursor c = getContentResolver().query(Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido,
                 idViaje + ""), null, null, null, null);
 
@@ -104,6 +106,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
             double distancia = c.getDouble(c.getColumnIndex(RecorridosObtenidos.distancia_recorrido));
             long tiempo = c.getLong(c.getColumnIndex(RecorridosObtenidos.duracion_recorrido));
             float calorias = c.getFloat(c.getColumnIndex(RecorridosObtenidos.calorias_recorrido));
+            int pasos = c.getInt(c.getColumnIndex(RecorridosObtenidos.pasos_recorrido));
 
             double velocidadPromedio = 0;
 
@@ -119,6 +122,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
             velocidadPromedioTV.setText(String.format("%.2f KM/H", velocidadPromedio));
             tiempoTV.setText(String.format("%02d:%02d:%02d", horas, minutos, segundos));
             caloriasTV.setText(String.format("%.2f CAL", calorias));
+            pasosTV.setText(String.format("%d", pasos));
 
             // La fecha se almacena como yyyy-mm-dd, convertir a dd-mm-yyyy
             String fecha = c.getString(c.getColumnIndex(RecorridosObtenidos.fecha_recorrido));
@@ -129,6 +133,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
             calificacionTV.setText(c.getInt(c.getColumnIndex(RecorridosObtenidos.calificacion_recorrido)) + "");
             comentarioTV.setText(c.getString(c.getColumnIndex(RecorridosObtenidos.comentario_recorrido)));
             tituloTV.setText(c.getString(c.getColumnIndex(RecorridosObtenidos.nombre_recorrido)));
+
 
             // Si el usuario ha configurado una imagen, mostrarla; en caso contrario, mostrar la imagen predeterminada
             String uriStr = c.getString(c.getColumnIndex(RecorridosObtenidos.imagen_recorrido));
