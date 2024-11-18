@@ -364,7 +364,10 @@ public class Viajes extends AppCompatActivity {
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             switch (requestCode) {
                 case PERMISSION_GPS_CODE:
-                    Log.d("Viajes", "Permiso de GPS concedido.");
+                    initButtons();
+                    if (locationService != null) {
+                        locationService.notificarGPS();
+                    }
                     break;
                 case PERMISSION_ACTIVITY_RECOGNITION_CODE:
                     Log.d("Viajes", "Permiso de reconocimiento de actividad concedido.");

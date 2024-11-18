@@ -7,9 +7,6 @@ import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int PERMISSION_GPS_CODE = 1;
-    private static final int PERMISSION_COAL_GPS_CODE = 2;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

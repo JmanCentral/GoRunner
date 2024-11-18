@@ -248,7 +248,7 @@ public class Localizacion extends Service implements SensorEventListener {
             Localizacion.this.guardarRecorrido();
         }
 
-        public void notificarGPSHabilitado() {
+        public void notificarGPS() {
             Localizacion.this.notificarGPSHabilitado();
         }
 

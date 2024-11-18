@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class pesoActivity extends AppCompatActivity {
 
@@ -22,18 +23,49 @@ public class pesoActivity extends AppCompatActivity {
         peso = findViewById(R.id.txt_peso);
     }
 
-    public void Guardarpeso(View view) {
+    public boolean Guardarpeso(View view) {
         // Obtener el valor del peso del EditText y convertirlo a Float
-        Float pesoValue = Float.parseFloat(peso.getText().toString());
+        String pesoStr = peso.getText().toString();
 
-        // Guardar el peso en SharedPreferences
-        SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putFloat("peso", pesoValue);
-        editor.apply(); // Guardar los cambios
+        if (pesoStr.isEmpty()) {
+            // Si el campo está vacío, mostrar un mensaje de error
+            Toast.makeText(this, "Por favor ingresa un peso", Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        try {
+            Float pesoValue = Float.parseFloat(pesoStr);
+
+            boolean esPesoValido = validarPeso(pesoValue);
+
+            if (pesoValue > 0 && esPesoValido) {
+                // Guardar el peso en SharedPreferences
+                SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putFloat("peso", pesoValue);
+                editor.apply(); // Guardar los cambios
+
+                // Redirigir a la actividad principal
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+                return true;  // Peso guardado correctamente
+            } else {
+                // Si el peso no es válido o es menor que 0
+                Toast.makeText(this, "El peso debe estar entre 0.5 kg y 500 kg", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            // Si la conversión a Float falla, mostrar un mensaje de error
+            Toast.makeText(this, "Por favor ingresa un valor numérico válido para el peso", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+    }
+
+    private boolean validarPeso(Float pesoValue) {
+        final float MIN_PESO = 0.5F;  // Peso mínimo permitido (en kg)
+        final float MAX_PESO = 500.0F;  // Peso máximo permitido (en kg)
+
+        return pesoValue >= MIN_PESO && pesoValue <= MAX_PESO;
     }
 
 }

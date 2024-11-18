@@ -1,5 +1,6 @@
 package com.example.gorunner;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -115,7 +116,6 @@ public class EditarCarrera extends AppCompatActivity {
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     SOLICITUD_PERMISO_ALMACENAMIENTO);
         } else {
-            abrirAlmacenamiento();
         }
     }
 
@@ -135,10 +135,30 @@ public class EditarCarrera extends AppCompatActivity {
                     new String[]{Manifest.permission.CAMERA},
                     SOLICITUD_PERMISO_CAMARA);
         } else {
-            // Si el permiso ya ha sido concedido, abrir la cámara
-            abrirCamara();
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            // Si el permiso fue concedido
+            if (requestCode == SOLICITUD_PERMISO_ALMACENAMIENTO) {
+                abrirAlmacenamiento(); // Abre el almacenamiento al instante
+            } else if (requestCode == SOLICITUD_PERMISO_CAMARA) {
+                abrirCamara(); // Abre la cámara al instante
+            }
+        } else {
+            // Si el permiso fue denegado
+            if (requestCode == SOLICITUD_PERMISO_ALMACENAMIENTO) {
+                Toast.makeText(this, "Permiso de almacenamiento denegado", Toast.LENGTH_SHORT).show();
+            } else if (requestCode == SOLICITUD_PERMISO_CAMARA) {
+                Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
     private void abrirCamara() {
         Intent intentCapturarImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
