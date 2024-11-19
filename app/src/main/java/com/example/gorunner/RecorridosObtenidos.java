@@ -14,6 +14,7 @@ public class RecorridosObtenidos {
     public static final String distancia_recorrido = "distancia";
     public static final String calorias_recorrido = "calorias";
     public static final String pasos_recorrido = "pasos";
+    public static final String velocidad_recorrido = "velocidad_promedio";
     public static final String nombre_recorrido = "nombre";
     public static final String calificacion_recorrido = "calificacion";
     public static final String comentario_recorrido = "comentario";

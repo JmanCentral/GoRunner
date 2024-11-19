@@ -107,10 +107,8 @@ public class Viajes extends AppCompatActivity {
                             long minutos = (duracion % 3600) / 60;
                             long segundos = duracion % 60;
 
-                            float velocidadPromedio = 0;
-                            if(d != 0) {
-                                velocidadPromedio = distancia / (d / 3600);
-                            }
+                            float velocidadPromedio = locationService.obtenerVelocidadPromedio();
+
 
                             SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
                             float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);

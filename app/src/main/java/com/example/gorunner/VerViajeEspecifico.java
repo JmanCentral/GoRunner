@@ -88,6 +88,12 @@ public class VerViajeEspecifico extends AppCompatActivity {
         startActivity(actividadEditar);
     }
 
+    public void Eliminar(View vista) {
+        // Eliminar este viaje de la base de datos
+        getContentResolver().delete(Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido,
+                idViaje + ""), null, null);
+    }
+
     public void Mapa(View vista) {
         // Mostrar este viaje en una actividad de Google Maps
         Intent mapa = new Intent(VerViajeEspecifico.this, MapsActivity.class);
@@ -107,12 +113,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
             long tiempo = c.getLong(c.getColumnIndex(RecorridosObtenidos.duracion_recorrido));
             float calorias = c.getFloat(c.getColumnIndex(RecorridosObtenidos.calorias_recorrido));
             int pasos = c.getInt(c.getColumnIndex(RecorridosObtenidos.pasos_recorrido));
-
-            double velocidadPromedio = 0;
-
-            if (tiempo != 0) {
-                velocidadPromedio = distancia / (tiempo / 3600.0);
-            }
+            float velocidadPromedio = c.getFloat(c.getColumnIndex(RecorridosObtenidos.velocidad_recorrido));
 
             long horas = tiempo / 3600;
             long minutos = (tiempo % 3600) / 60;

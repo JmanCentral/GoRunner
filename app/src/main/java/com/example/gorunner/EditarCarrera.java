@@ -109,13 +109,16 @@ public class EditarCarrera extends AppCompatActivity {
     }
 
     private void verificarPermisoAlmacenamiento() {
+        // Verificar si el permiso de almacenamiento ha sido concedido
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-
+            // Si no está concedido, solicitar el permiso
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     SOLICITUD_PERMISO_ALMACENAMIENTO);
         } else {
+            // Si el permiso ya ha sido concedido, abrir el almacenamiento
+            abrirAlmacenamiento();
         }
     }
 
@@ -134,7 +137,9 @@ public class EditarCarrera extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA},
                     SOLICITUD_PERMISO_CAMARA);
-        } else {
+        }
+        else {
+            abrirCamara();
         }
     }
 

@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
     public DBHelper(Context context) {
-        super(context, "GoRunnerPrueba", null, 1);
+        super(context, "GoRunnerPrueba3", null, 1);
     }
 
     @Override
@@ -18,6 +18,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 "distancia REAL NOT NULL," +
                 "calorias REAL NOT NULL," +
                 "pasos INTEGER NOT NULL DEFAULT 0,"+
+                "velocidad_promedio REAL NOT NULL," +
                 "fecha DATETIME NOT NULL," +
                 "nombre varchar(256) NOT NULL DEFAULT 'Recorrido guardado'," +
                 "calificacion INTEGER NOT NULL DEFAULT 1," +

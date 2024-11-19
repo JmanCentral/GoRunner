@@ -161,7 +161,8 @@ public class Localizacion extends Service implements SensorEventListener {
         datosJornada.put(RecorridosObtenidos.distancia_recorrido, obtenerDistancia());
         datosJornada.put(RecorridosObtenidos.duracion_recorrido, (long) obtenerDuracion());
         datosJornada.put(RecorridosObtenidos.fecha_recorrido, obtenerFechaHora());
-        datosJornada.put(RecorridosObtenidos.   calorias_recorrido, obtenerCalorias(pesoRecuperado));
+        datosJornada.put(RecorridosObtenidos.calorias_recorrido, obtenerCalorias(pesoRecuperado));
+        datosJornada.put(RecorridosObtenidos.velocidad_recorrido, obtenerVelocidadPromedio());
         datosJornada.put(RecorridosObtenidos.pasos_recorrido, obtenerPasos());
 
         long idRecorrido = Long.parseLong(getContentResolver().insert(RecorridosObtenidos.uriRecorrido, datosJornada).getLastPathSegment());
@@ -199,6 +200,22 @@ public class Localizacion extends Service implements SensorEventListener {
         return  peso * distancia * 1.036f;
     }
 
+    private  float obtenerVelocidadPromedio()
+        {
+        float distancia = obtenerDistancia();
+        float d = (float) obtenerDuracion();
+
+        if (d== 0) {
+            return 0;
+        }
+
+        float velocidadPromedio;
+
+        velocidadPromedio =  (distancia / (d / 3600));
+
+        return velocidadPromedio;
+        }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
@@ -234,6 +251,10 @@ public class Localizacion extends Service implements SensorEventListener {
 
         public int obtenerPasos() {
             return Localizacion.this.obtenerPasos();
+        }
+
+        public float obtenerVelocidadPromedio() {
+            return Localizacion.this.obtenerVelocidadPromedio();
         }
 
         public float obtenerCalorias(float peso) {
