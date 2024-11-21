@@ -18,7 +18,7 @@ public class pesoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_statistics);
+        setContentView(R.layout.activity_peso);
 
         peso = findViewById(R.id.txt_peso);
     }

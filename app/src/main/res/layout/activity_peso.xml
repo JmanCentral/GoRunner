@@ -13,6 +13,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
         android:text="Peso (kg)"
+        android:textColor="#0f4d8b"
+        android:textColorLink="#0f4d8b"
         android:textSize="25sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -34,9 +36,33 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:background="#0f4d8b"
         android:onClick="Guardarpeso"
         android:text="Guardar"
+        android:textColor="#ffffff"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txt_peso" />
+
+    <TextView
+        android:id="@+id/textView15"
+        android:layout_width="324dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:text="Necesitamos tu peso para calcular tus calorias promedio quemadas"
+        android:textColor="#0f4d8b"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button7" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView15"
+        app:srcCompat="@drawable/calorias" />
 </androidx.constraintlayout.widget.ConstraintLayout>

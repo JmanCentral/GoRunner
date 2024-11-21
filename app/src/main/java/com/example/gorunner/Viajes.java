@@ -56,7 +56,7 @@ public class Viajes extends AppCompatActivity {
             }
 
             gif = findViewById(R.id.gif);
-            gif.setGifImageResource(R.drawable.atleta31);
+            gif.setGifImageResource(R.drawable.atleta32);
             gif.pausar();
 
             distanciaTexto = findViewById(R.id.distanceText);
@@ -85,7 +85,7 @@ public class Viajes extends AppCompatActivity {
 
         private ServiceConnection lsc = new ServiceConnection() {
             @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
                 locationService = (Localizacion.EnlaceServicioLocalizacion) iBinder;
 
                 // si actualmente se está rastreando, habilitar el botón de detener y deshabilitar el de iniciar
@@ -186,6 +186,7 @@ public class Viajes extends AppCompatActivity {
                 Intent intent = new Intent(this, pesoActivity.class);
                 startActivity(intent);
             });
+            alertDialogBuilder.create().show();
         }
         else {
             gif.reproducir();
@@ -273,25 +274,18 @@ public class Viajes extends AppCompatActivity {
 
     public static class NoPermissionDialogue extends DialogFragment {
         public static NoPermissionDialogue newInstance() {
-            NoPermissionDialogue frag = new NoPermissionDialogue();
-            return frag;
+            return new NoPermissionDialogue();
         }
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("¡Se requiere GPS para rastrear tu viaje!")
-                    .setPositiveButton("Habilitar GPS", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // el usuario aceptó habilitar el GPS
-                            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_GPS_CODE);
-                        }
-                    })
-                    .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                        }
-                    });
-            return builder.create();
+            return new AlertDialog.Builder(getActivity())
+                    .setMessage("¡Se requiere GPS para rastrear tu viaje!")
+                    .setPositiveButton("Habilitar GPS", (dialog, id) ->
+                            ActivityCompat.requestPermissions(getActivity(),
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_GPS_CODE))
+                    .setNegativeButton("Cancelar", null)
+                    .create();
         }
     }
 
@@ -302,27 +296,19 @@ public class Viajes extends AppCompatActivity {
     }
 
     private void showLocationDisabledAlert() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("La ubicación está deshabilitada. ¿Deseas habilitarla?")
+        new AlertDialog.Builder(this)
+                .setMessage("La ubicación está deshabilitada. ¿Deseas habilitarla?")
                 .setCancelable(false)
-                .setPositiveButton("Sí", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-        AlertDialog alert = builder.create();
-        alert.show();
+                .setPositiveButton("Sí", (dialog, id) ->
+                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
+                .setNegativeButton("No", (dialog, id) -> dialog.cancel())
+                .create()
+                .show();
     }
 
-    private void requestPermission(String permission, int requestCode, String rationaleMessage) {
+    private void requestPermission(String permission, int requestCode, String rationaleMessage, Runnable onPermissionGranted) {
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-                // Mostrar una explicación al usuario sobre por qué se necesita este permiso
                 new AlertDialog.Builder(this)
                         .setMessage(rationaleMessage)
                         .setPositiveButton("Aceptar", (dialog, which) ->
@@ -331,11 +317,10 @@ public class Viajes extends AppCompatActivity {
                         .create()
                         .show();
             } else {
-                // Solicitar el permiso directamente
                 ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
             }
         } else {
-            Log.d("Viajes", permission + " ya concedido.");
+            onPermissionGranted.run();
         }
     }
 
@@ -343,25 +328,30 @@ public class Viajes extends AppCompatActivity {
         requestPermission(
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 PERMISSION_GPS_CODE,
-                "Se necesita acceso al GPS para rastrear tu ubicación."
+                "Se necesita acceso al GPS para rastrear tu ubicación.",
+                this::onGpsPermissionGranted
         );
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // Reconocimiento de actividad solo en API 29+
+    }
+
+    private void onGpsPermissionGranted() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             requestPermission(
                     Manifest.permission.ACTIVITY_RECOGNITION,
                     PERMISSION_ACTIVITY_RECOGNITION_CODE,
-                    "Se necesita acceso al sensor de actividad para rastrear tus pasos."
+                    "Se necesita acceso al sensor de actividad para rastrear tus pasos.",
+                    () -> Log.d("Viajes", "Permiso de reconocimiento de actividad concedido.")
             );
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             switch (requestCode) {
                 case PERMISSION_GPS_CODE:
+                    onGpsPermissionGranted();
                     initButtons();
                     if (locationService != null) {
                         locationService.notificarGPS();
@@ -375,6 +365,5 @@ public class Viajes extends AppCompatActivity {
             Log.d("Viajes", "Permiso no concedido para el código: " + requestCode);
         }
     }
-
 
 }
