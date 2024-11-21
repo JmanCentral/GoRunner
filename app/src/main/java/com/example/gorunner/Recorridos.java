@@ -15,7 +15,7 @@ public class Recorridos extends ContentProvider {
 
     private static final UriMatcher emparejador;
 
-    //desde git
+    //se escriben las rutas donde esta los atributos que se almacenan en la base de datos
     static {
         emparejador = new UriMatcher(UriMatcher.NO_MATCH);
         emparejador.addURI(RecorridosObtenidos.paquete, "recorrido", 1);
@@ -41,9 +41,11 @@ public class Recorridos extends ContentProvider {
         }
     }
 
-    // implement CRUD database operations
+    // implementación de las operaciones CRUD del DB helper
 
     @Override
+
+    //Insertar recorrido y ubicación
     public Uri insert(Uri uri, ContentValues valores) {
         String nombreTabla;
 
@@ -69,6 +71,7 @@ public class Recorridos extends ContentProvider {
     }
 
     @Override
+    //Listar recorridos con ubicación 
     public Cursor query(Uri uri, String[] proyeccion, String seleccion, String[]
             argumentosSeleccion, String orden) {
 
@@ -88,6 +91,7 @@ public class Recorridos extends ContentProvider {
     }
 
     @Override
+    //Actualizar recorridos y ubicación
     public int update(Uri uri, ContentValues valores, String seleccion, String[]
             argumentosSeleccion) {
         String nombreTabla;
@@ -117,6 +121,7 @@ public class Recorridos extends ContentProvider {
     }
 
     @Override
+    //Eliminar recorrido e ubicación 
     public int delete(Uri uri, String seleccion, String[] argumentosSeleccion) {
         String nombreTabla;
         int cuenta;
