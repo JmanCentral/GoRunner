@@ -31,7 +31,7 @@
             android:textColor="#0f4d8b" />
 
         <EditText
-            android:id="@+id/titleEditText"
+            android:id="@+id/titulo"
             android:layout_width="272dp"
             android:layout_height="48dp"
             android:layout_marginTop="20dp"
@@ -48,7 +48,7 @@
             android:textColor="#0f4d8b" />
 
         <EditText
-            android:id="@+id/ratingEditText"
+            android:id="@+id/calificacion"
             android:layout_width="297dp"
             android:layout_height="45dp"
             android:layout_marginTop="16dp"
@@ -65,7 +65,7 @@
             android:textColor="#0f4d8b" />
 
         <EditText
-            android:id="@+id/commentEditText"
+            android:id="@+id/comentario"
             android:layout_width="348dp"
             android:layout_height="169dp"
             android:layout_marginTop="36dp"

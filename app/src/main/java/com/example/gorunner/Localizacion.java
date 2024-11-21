@@ -25,7 +25,9 @@ import android.hardware.SensorManager;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+// Clase para el servicio de localización
 public class Localizacion extends Service implements SensorEventListener {
+    // Servicio de localización
     private LocationManager gestorLocalizacion;
     private MiLocalizacionListener oyenteLocalizacion;
     private final IBinder enlace = new EnlaceServicioLocalizacion();
@@ -49,10 +51,14 @@ public class Localizacion extends Service implements SensorEventListener {
         super.onCreate();
         Log.d("mdp", "Servicio de Localización creado");
 
+        // Crear el gestor de localización
         gestorLocalizacion = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        // Crear el oyente de localización
         oyenteLocalizacion = new MiLocalizacionListener();
+        // Habilitar la localización
         oyenteLocalizacion.grabarUbicaciones = false;
 
+        // Obtener el sensor de pasos
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
             stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
@@ -68,6 +74,7 @@ public class Localizacion extends Service implements SensorEventListener {
         }
     }
 
+    // Mostrar una notificación cuando se inicia el servicio de localización
     private void agregarNotificacion() {
         NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
@@ -93,6 +100,7 @@ public class Localizacion extends Service implements SensorEventListener {
     }
 
     @Override
+    // Cuando se destruye el servicio de localización, eliminar el oyente de localización
     public void onDestroy() {
         super.onDestroy();
         gestorLocalizacion.removeUpdates(oyenteLocalizacion);
@@ -111,15 +119,22 @@ public class Localizacion extends Service implements SensorEventListener {
     }
 
     @Override
+    // Cuando se crea el enlace con el servicio de localización, devolver el enlace
     public IBinder onBind(Intent intent) {
         return enlace;
     }
 
+    // Métodos para el servicio de localización
+
+    // Obtiene la distancia recorrida en km
     protected float obtenerDistancia() {
         return oyenteLocalizacion.obtenerDistanciaDeRecorrido();
     }
 
+    // Inicia un nuevo recorrido
     protected void iniciarRecorrido() {
+
+        // Si ya se está rastreando, no hacer nada
         agregarNotificacion();
         oyenteLocalizacion.nuevoRecorrido();
         oyenteLocalizacion.grabarUbicaciones = true;
@@ -134,6 +149,7 @@ public class Localizacion extends Service implements SensorEventListener {
         }
     }
 
+    // Obtiene la duración del recorrido en segundos
     protected double obtenerDuracion() {
         if (tiempoInicio == 0) {
             return 0.0;
@@ -149,11 +165,15 @@ public class Localizacion extends Service implements SensorEventListener {
         return milisegundosTranscurridos / 1000.0;
     }
 
+    // Obtiene los pasos del recorrido
     protected int obtenerPasos() {
         return pasosActuales - pasosInicio;
     }
 
+    // Guarda el recorrido en la base de datos junto con sus atributos
     protected void guardarRecorrido() {
+
+        // recupera el peso desde el shared preferences
         SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
         float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
 
@@ -177,9 +197,11 @@ public class Localizacion extends Service implements SensorEventListener {
             getContentResolver().insert(RecorridosObtenidos.uriUbicacion, datosUbicacion);
         }
 
+        // Eliminar la notificación
         NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         gestorNotificaciones.cancel(ID_NOTIFICACION);
 
+        // Reiniciar el oyente de localización
         oyenteLocalizacion.grabarUbicaciones = false;
         tiempoFin = SystemClock.elapsedRealtime();
         tiempoInicio = 0;
@@ -190,18 +212,21 @@ public class Localizacion extends Service implements SensorEventListener {
         Log.d("mdp", "Recorrido guardado con id = " + idRecorrido);
     }
 
+    // Obtiene la fecha y hora actual
     private String obtenerFechaHora() {
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
         Date fecha = new Date();
         return formato.format(fecha);
     }
 
+    // Calcula las calorias del recorrido
     private float obtenerCalorias(float peso) {
 
         float distancia = obtenerDistancia();
         return  peso * distancia * 1.036f;
     }
 
+    // Calcula la velocidad promedio
     private  float obtenerVelocidadPromedio()
         {
         float distancia = obtenerDistancia();
@@ -219,6 +244,7 @@ public class Localizacion extends Service implements SensorEventListener {
         }
 
     @Override
+    // Registra los cambios en el sensor de pasos
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
             if (pasosInicio == 0) {
@@ -228,6 +254,7 @@ public class Localizacion extends Service implements SensorEventListener {
         }
     }
 
+    //
     protected void notificarGPSHabilitado() {
         try {
             gestorLocalizacion.requestLocationUpdates(gestorLocalizacion.GPS_PROVIDER, 3, 3, oyenteLocalizacion);
@@ -238,10 +265,12 @@ public class Localizacion extends Service implements SensorEventListener {
     }
 
     @Override
+
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // No se necesita implementar
     }
 
+    // el Enlace para el servicio de localización que herada de Binder se encarga de devolver los datos del servicio
     public class EnlaceServicioLocalizacion extends Binder {
         public float obtenerDistancia() {
             return Localizacion.this.obtenerDistancia();

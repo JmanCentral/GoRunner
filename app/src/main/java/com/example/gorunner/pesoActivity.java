@@ -31,6 +31,7 @@ public class pesoActivity extends AppCompatActivity {
         }
     }
 
+    // Método para guardar el peso en SharedPreferences
     public boolean Guardarpeso(View view) {
         // Obtener el valor del peso del EditText y convertirlo a Float
         String pesoStr = peso.getText().toString();
@@ -45,6 +46,7 @@ public class pesoActivity extends AppCompatActivity {
             Float pesoValue = Float.parseFloat(pesoStr);
 
             boolean esPesoValido = validarPeso(pesoValue);
+
 
             if (pesoValue > 0 && esPesoValido) {
                 // Guardar el peso en SharedPreferences
@@ -69,6 +71,7 @@ public class pesoActivity extends AppCompatActivity {
         }
     }
 
+    //Método para validar el peso
     private boolean validarPeso(Float pesoValue) {
         final float MIN_PESO = 0.5F;  // Peso mínimo permitido (en kg)
         final float MAX_PESO = 500.0F;  // Peso máximo permitido (en kg)

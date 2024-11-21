@@ -13,18 +13,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
+    // Método para iniciar el viaje
     public void empezarviaje(View v) {
 
         Intent journey = new Intent(MainActivity.this, Viajes.class);
         startActivity(journey);
     }
 
+    // Método para ver los recorridos
     public void verrecorridos(View v) {
 
         Intent view = new Intent(MainActivity.this, VerViajes.class);
         startActivity(view);
     }
 
+    // Método para ir a cacular las calorias
     public void peso(View v) {
         Intent stats = new Intent(MainActivity.this, pesoActivity.class);
         startActivity(stats);

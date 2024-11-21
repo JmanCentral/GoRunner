@@ -121,6 +121,7 @@ public class VerViajes extends ListActivity {
 
         fecha.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
+            // Método para manejar el cambio de fecha
             public void onSelectedDayChange(CalendarView vista, int anio, int mes, int diaDelMes) {
                 mes += 1; // los meses empiezan en 0
                 String fechaSeleccionada = String.format("%02d/%02d/%04d", diaDelMes, mes, anio);
@@ -131,6 +132,8 @@ public class VerViajes extends ListActivity {
         listaViajes.setClickable(true);
         listaViajes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
+
+            // Método para manejar el clic en un viaje
             public void onItemClick(AdapterView<?> arg0, View arg1, int posicion, long arg3) {
                 ItemViaje viaje = (ItemViaje) listaViajes.getItemAtPosition(posicion);
                 long idViaje = viaje.getId();
@@ -146,6 +149,8 @@ public class VerViajes extends ListActivity {
     }
 
     @Override
+
+    // Actualizar la lista de viajes cuando se regrese a la actividad
     public void onResume() {
         super.onResume();
         String fechaSeleccionada = obtenerFechaSeleccionadaDelCalendario();
@@ -154,6 +159,7 @@ public class VerViajes extends ListActivity {
         }
     }
 
+    // Obtener la fecha seleccionada en el calendario
     private String obtenerFechaSeleccionadaDelCalendario() {
         // Puedes utilizar esta función para obtener la fecha actual en formato dd/MM/yyyy si es necesario.
         Calendar calendario = Calendar.getInstance();

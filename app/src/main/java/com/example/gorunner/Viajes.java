@@ -31,6 +31,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class Viajes extends AppCompatActivity {
+
+        // Clase para manejar el servicio de ubicación
         private GifPlayer gif;
         private Localizacion.EnlaceServicioLocalizacion locationService;
 
@@ -45,6 +47,7 @@ public class Viajes extends AppCompatActivity {
         private static final int PERMISSION_GPS_CODE = 1;
         private static final int PERMISSION_ACTIVITY_RECOGNITION_CODE = 2;
 
+        // Clase para manejar el servicio de ubicación
         @SuppressLint("MissingInflatedId")
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -59,14 +62,14 @@ public class Viajes extends AppCompatActivity {
             gif.setGifImageResource(R.drawable.atleta32);
             gif.pausar();
 
-            distanciaTexto = findViewById(R.id.distanceText);
-            duracionTexto = findViewById(R.id.durationText);
-            velocidadPromedioTexto = findViewById(R.id.avgSpeedText);
-            caloriasPromedio = findViewById(R.id.avgSpeedText2);
+            distanciaTexto = findViewById(R.id.distancia);
+            duracionTexto = findViewById(R.id.duracion);
+            velocidadPromedioTexto = findViewById(R.id.velocidadpromedio);
+            caloriasPromedio = findViewById(R.id.calorias);
             pasosTotales = findViewById(R.id.pasos);
 
-            botonIniciar = findViewById(R.id.startButton);
-            botonDetener = findViewById(R.id.stopButton);
+            botonIniciar = findViewById(R.id.iniciar);
+            botonDetener = findViewById(R.id.detener);
 
             botonDetener.setEnabled(false);
             botonIniciar.setEnabled(false);
@@ -83,6 +86,7 @@ public class Viajes extends AppCompatActivity {
         // revisará el servicio de ubicación para obtener la distancia y la duración
         private Handler postBack = new Handler();
 
+        // clase para manejar el servicio de ubicación
         private ServiceConnection lsc = new ServiceConnection() {
             @Override
                 public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -91,6 +95,7 @@ public class Viajes extends AppCompatActivity {
                 // si actualmente se está rastreando, habilitar el botón de detener y deshabilitar el de iniciar
                 iniciarbotones();
 
+                // iniciar el temporizador y el rastreo de ubicaciones GPS junto con el servicio mediante un hilo
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -144,6 +149,7 @@ public class Viajes extends AppCompatActivity {
                 }).start();
             }
 
+            // Método para manejar la desconexión del servicio
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             locationService = null;
@@ -173,10 +179,12 @@ public class Viajes extends AppCompatActivity {
 
 
 
+    // Manejar el botón de iniciar
     public void Inicio(View view) {
         SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
         float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
 
+        // Revisar si el peso está configurado
         if (pesoRecuperado == 0.0f) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setTitle("Peso no configurado");
@@ -197,6 +205,7 @@ public class Viajes extends AppCompatActivity {
         }
     }
 
+    // Manejar el botón de detener
     public void Fin(View view) {
         float distancia = locationService.obtenerDistancia();
         locationService.guardarRecorrido();
@@ -218,10 +227,12 @@ public class Viajes extends AppCompatActivity {
 
     }
 
+    // Obtener el ID del último viaje
     private long obtenerIdUltimoViaje() {
         long idUltimoViaje = -1;
 
 
+        //Consulta a la base de datos para obtener el ID del último viaje
         Cursor cursor = getContentResolver().query(
                 RecorridosObtenidos.uriRecorrido,
                 new String[]{"recorridoID"},
@@ -238,7 +249,9 @@ public class Viajes extends AppCompatActivity {
         return idUltimoViaje;
     }
 
+
     @Override
+    // Manejar la finalización de la actividad
     public void onDestroy() {
         super.onDestroy();
 
@@ -248,6 +261,7 @@ public class Viajes extends AppCompatActivity {
         }
     }
 
+    // Clase para manejar el diálogo de finalización del viaje
     public static class FinishedTrackingDialogue extends DialogFragment {
         public static FinishedTrackingDialogue newInstance(String distancia) {
             Bundle savedInstanceState = new Bundle();
@@ -258,6 +272,7 @@ public class Viajes extends AppCompatActivity {
         }
 
         @Override
+        // Construir el diálogo de finalización del viaje
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("Tu viaje ha sido guardado. Corriste un total de " + getArguments().getString("distancia") + " KM")
@@ -272,12 +287,14 @@ public class Viajes extends AppCompatActivity {
         }
     }
 
+    // Clase para manejar el diálogo de permiso de ubicación
     public static class NoPermissionDialogue extends DialogFragment {
         public static NoPermissionDialogue newInstance() {
             return new NoPermissionDialogue();
         }
 
         @Override
+        // Construir el diálogo de permiso de ubicación
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             return new AlertDialog.Builder(getActivity())
                     .setMessage("¡Se requiere GPS para rastrear tu viaje!")
@@ -289,12 +306,14 @@ public class Viajes extends AppCompatActivity {
         }
     }
 
+    // Revisar si el GPS está habilitado
     private boolean isLocationEnabled() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
+    // Mostrar un diálogo si el GPS está deshabilitado
     private void showLocationDisabledAlert() {
         new AlertDialog.Builder(this)
                 .setMessage("La ubicación está deshabilitada. ¿Deseas habilitarla?")
@@ -306,6 +325,7 @@ public class Viajes extends AppCompatActivity {
                 .show();
     }
 
+    // Manejar el permiso de ubicación
     private void requestPermission(String permission, int requestCode, String rationaleMessage, Runnable onPermissionGranted) {
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
@@ -324,6 +344,7 @@ public class Viajes extends AppCompatActivity {
         }
     }
 
+    // Manejar el permiso de ubicación
     private void handlePermissions() {
         requestPermission(
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -333,6 +354,7 @@ public class Viajes extends AppCompatActivity {
         );
     }
 
+    // Manejar el permiso de ubicación
     private void onGpsPermissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             requestPermission(
@@ -345,6 +367,8 @@ public class Viajes extends AppCompatActivity {
     }
 
     @Override
+
+    // Verificar el estado de los permisos
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 

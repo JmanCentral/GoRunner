@@ -33,13 +33,16 @@ public class VerViajeEspecifico extends AppCompatActivity {
 
     private Handler manejador = new Handler();
 
+    // Clase interna para observar cambios en la base de datos
     protected class MiObservador extends ContentObserver {
 
+        // Método para manejar cambios en la base de datos
         public MiObservador(Handler handler) {
             super(handler);
         }
 
         @Override
+
         public void onChange(boolean selfChange) {
             this.onChange(selfChange, null);
         }
@@ -79,6 +82,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
                 RecorridosObtenidos.todas, true, new MiObservador(manejador));
     }
 
+    // Botones de la vista
     public void Editar(View vista) {
         // Dirigir a la actividad para editar los campos de este viaje
         Intent actividadEditar = new Intent(VerViajeEspecifico.this, EditarCarrera.class);
@@ -88,12 +92,14 @@ public class VerViajeEspecifico extends AppCompatActivity {
         startActivity(actividadEditar);
     }
 
+    // Posible emplementación para eliminar el viaje
     public void Eliminar(View vista) {
         // Eliminar este viaje de la base de datos
         getContentResolver().delete(Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido,
                 idViaje + ""), null, null);
     }
 
+    // Botón para ver el mapa del viaje
     public void Mapa(View vista) {
         // Mostrar este viaje en una actividad de Google Maps
         Intent mapa = new Intent(VerViajeEspecifico.this, MapsActivity.class);
@@ -103,11 +109,14 @@ public class VerViajeEspecifico extends AppCompatActivity {
         startActivity(mapa);
     }
 
+    // Mostrar los datos del viaje en la vista
     private void llenarVista() {
 
+        // Consultar la base de datos para obtener los datos del viaje
         Cursor c = getContentResolver().query(Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido,
                 idViaje + ""), null, null, null, null);
 
+        // Mostrar los datos en la vista
         if (c.moveToFirst()) {
             double distancia = c.getDouble(c.getColumnIndex(RecorridosObtenidos.distancia_recorrido));
             long tiempo = c.getLong(c.getColumnIndex(RecorridosObtenidos.duracion_recorrido));

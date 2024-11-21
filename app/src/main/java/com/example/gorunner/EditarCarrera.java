@@ -50,9 +50,9 @@ public class EditarCarrera extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
 
         imagenViaje = findViewById(R.id.Fotico);
-        tituloET = findViewById(R.id.titleEditText);
-        comentarioET = findViewById(R.id.commentEditText);
-        calificacionET = findViewById(R.id.ratingEditText);
+        tituloET = findViewById(R.id.titulo);
+        comentarioET = findViewById(R.id.comentario);
+        calificacionET = findViewById(R.id.calificacion);
         idViaje = bundle.getLong("idViaje");
 
         imagenSeleccionadaViaje = null;
