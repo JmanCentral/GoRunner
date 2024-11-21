@@ -72,7 +72,7 @@ public class Localizacion extends Service implements SensorEventListener {
         NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence nombre = "Rastreo de Jornada";
+            CharSequence nombre = "Rastreo de Recorrido";
             String descripcion = "¡Sigue corriendo!";
             int importancia = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel canal = new NotificationChannel(ID_CANAL, nombre, importancia);
@@ -85,7 +85,7 @@ public class Localizacion extends Service implements SensorEventListener {
         PendingIntent intentoPendiente = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Builder constructorNotificacion = new NotificationCompat.Builder(this, ID_CANAL)
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("Rastreo de Jornada")
+                .setContentTitle("Rastreo de Recorrido")
                 .setContentText("¡Sigue corriendo!")
                 .setContentIntent(intentoPendiente)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -116,12 +116,12 @@ public class Localizacion extends Service implements SensorEventListener {
     }
 
     protected float obtenerDistancia() {
-        return oyenteLocalizacion.obtenerDistanciaDeJornada();
+        return oyenteLocalizacion.obtenerDistanciaDeRecorrido();
     }
 
     protected void iniciarRecorrido() {
         agregarNotificacion();
-        oyenteLocalizacion.nuevaJornada();
+        oyenteLocalizacion.nuevoRecorrido();
         oyenteLocalizacion.grabarUbicaciones = true;
         tiempoInicio = SystemClock.elapsedRealtime();
         tiempoFin = 0;
@@ -183,9 +183,11 @@ public class Localizacion extends Service implements SensorEventListener {
         oyenteLocalizacion.grabarUbicaciones = false;
         tiempoFin = SystemClock.elapsedRealtime();
         tiempoInicio = 0;
-        oyenteLocalizacion.nuevaJornada();
+        pasosInicio = 0;
+        pasosActuales = 0;
+        oyenteLocalizacion.nuevoRecorrido();
 
-        Log.d("mdp", "Jornada guardada con id = " + idRecorrido);
+        Log.d("mdp", "Recorrido guardado con id = " + idRecorrido);
     }
 
     private String obtenerFechaHora() {

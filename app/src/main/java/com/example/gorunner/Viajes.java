@@ -89,7 +89,7 @@ public class Viajes extends AppCompatActivity {
                 locationService = (Localizacion.EnlaceServicioLocalizacion) iBinder;
 
                 // si actualmente se está rastreando, habilitar el botón de detener y deshabilitar el de iniciar
-                initButtons();
+                iniciarbotones();
 
                 new Thread(new Runnable() {
                     @Override
@@ -151,7 +151,7 @@ public class Viajes extends AppCompatActivity {
     };
 
     // cada vez que la actividad se recarga mientras aún se rastrea un viaje (si se hace clic en el botón atrás, por ejemplo)
-    private void initButtons() {
+    private void iniciarbotones() {
         // sin permisos no hay botones
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             botonDetener.setEnabled(false);
@@ -173,7 +173,7 @@ public class Viajes extends AppCompatActivity {
 
 
 
-    public void onClickPlay(View view) {
+    public void Inicio(View view) {
         SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
         float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
 
@@ -197,7 +197,7 @@ public class Viajes extends AppCompatActivity {
         }
     }
 
-    public void onClickStop(View view) {
+    public void Fin(View view) {
         float distancia = locationService.obtenerDistancia();
         locationService.guardarRecorrido();
 
@@ -352,7 +352,7 @@ public class Viajes extends AppCompatActivity {
             switch (requestCode) {
                 case PERMISSION_GPS_CODE:
                     onGpsPermissionGranted();
-                    initButtons();
+                    iniciarbotones();
                     if (locationService != null) {
                         locationService.notificarGPS();
                     }

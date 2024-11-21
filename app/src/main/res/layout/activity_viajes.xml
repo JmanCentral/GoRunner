@@ -157,7 +157,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="#0f4d8b"
-                android:onClick="onClickPlay"
+                android:onClick="Inicio"
                 android:text="INICIO"
                 android:textColor="#FFFFFF" />
 
@@ -167,7 +167,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="#0f4d8b"
-                android:onClick="onClickStop"
+                android:onClick="Fin"
                 android:text="FINAL"
                 android:textColor="#FFFFFF" />
         </LinearLayout>

@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
     public DBHelper(Context context) {
-        super(context, "GoRunnerPrueba3", null, 1);
+        super(context, "GoRunner", null, 1);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 "fecha DATETIME NOT NULL," +
                 "nombre varchar(256) NOT NULL DEFAULT 'Recorrido guardado'," +
                 "calificacion INTEGER NOT NULL DEFAULT 1," +
-                "comentario varchar(256) NOT NULL DEFAULT ''," +
+                "comentario varchar(256) NOT NULL DEFAULT 'No hay Comentarios para este recorrido'," +
                 "imagen varchar(256) DEFAULT NULL);");
 
         db.execSQL("CREATE TABLE ubicacion (" +

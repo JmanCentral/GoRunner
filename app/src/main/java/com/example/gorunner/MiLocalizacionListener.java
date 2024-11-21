@@ -12,15 +12,15 @@ public class MiLocalizacionListener implements LocationListener {
     boolean grabarUbicaciones;
 
     public MiLocalizacionListener() {
-        nuevaJornada();
+        nuevoRecorrido();
         grabarUbicaciones = false;
     }
 
-    public void nuevaJornada() {
+    public void nuevoRecorrido() {
         ubicaciones = new ArrayList<Location>();
     }
 
-    public float obtenerDistanciaDeJornada() {
+    public float obtenerDistanciaDeRecorrido() {
         if(ubicaciones.size() <= 1) {
             return 0;
         }

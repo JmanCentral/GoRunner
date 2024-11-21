@@ -185,10 +185,22 @@ public class EditarCarrera extends AppCompatActivity {
                     if (data != null && data.getData() != null) {
                         Uri uriImagen = data.getData();
                         try {
+                            // Mantener permiso persistente para acceder a la imagen
                             getContentResolver().takePersistableUriPermission(uriImagen, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                            // Obtener flujo de entrada de la imagen
                             InputStream flujoImagen = getContentResolver().openInputStream(uriImagen);
+
+                            // Decodificar la imagen en un Bitmap
                             Bitmap imagenSeleccionada = BitmapFactory.decodeStream(flujoImagen);
-                            imagenViaje.setImageBitmap(imagenSeleccionada);
+
+                            // Redimensionar el Bitmap (por ejemplo, a 800x800 píxeles)
+                            Bitmap imagenRedimensionada = Bitmap.createScaledBitmap(imagenSeleccionada, 800, 800, true);
+
+                            // Asignar el Bitmap redimensionado al ImageView
+                            imagenViaje.setImageBitmap(imagenRedimensionada);
+
+                            // Guardar el URI de la imagen seleccionada
                             imagenSeleccionadaViaje = uriImagen;
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -201,10 +213,14 @@ public class EditarCarrera extends AppCompatActivity {
                 case SOLICITUD_CAPTURAR_IMAGEN:
                     Bundle extras = data.getExtras();
                     Bitmap imagenBitmap = (Bitmap) extras.get("data");
-                    imagenViaje.setImageBitmap(imagenBitmap);
 
-                    // Opcional: Guardar el Bitmap en almacenamiento para obtener un URI
-                    imagenSeleccionadaViaje = guardarImagenEnAlmacenamiento(imagenBitmap);
+                    // Redimensionar el Bitmap
+                    Bitmap imagenRedimensionada = Bitmap.createScaledBitmap(imagenBitmap, 800, 800, true);
+
+                    imagenViaje.setImageBitmap(imagenRedimensionada);
+
+                    // Opcional: Guardar la imagen redimensionada en almacenamiento
+                    imagenSeleccionadaViaje = guardarImagenEnAlmacenamiento(imagenRedimensionada);
                     break;
             }
         }
@@ -212,11 +228,12 @@ public class EditarCarrera extends AppCompatActivity {
 
     // Método para guardar la imagen en almacenamiento y obtener el URI
     private Uri guardarImagenEnAlmacenamiento(Bitmap bitmap) {
+        int quality = 100;
         Uri uri = null;
         try {
             File archivo = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "imagen_viaje_" + idViaje + ".jpg");
             FileOutputStream fos = new FileOutputStream(archivo);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, fos);
             fos.flush();
             fos.close();
             uri = Uri.fromFile(archivo);

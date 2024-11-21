@@ -21,6 +21,14 @@ public class pesoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_peso);
 
         peso = findViewById(R.id.txt_peso);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
+        float pesoGuardado = sharedPreferences.getFloat("peso", -1); // Valor por defecto -1 si no hay dato guardado
+
+        // Si hay un peso guardado, mostrarlo en el EditText
+        if (pesoGuardado != -1) {
+            peso.setText(String.valueOf(pesoGuardado)); // Convertir float a String y mostrarlo
+        }
     }
 
     public boolean Guardarpeso(View view) {
