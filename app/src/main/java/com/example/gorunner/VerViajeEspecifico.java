@@ -63,14 +63,14 @@ public class VerViajeEspecifico extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
 
-        imagenViaje = findViewById(R.id.ViewSingleJourney_journeyImg);
-        distanciaTV = findViewById(R.id.Statistics_recordDistance);
-        velocidadPromedioTV = findViewById(R.id.Statistics_distanceToday);
-        tiempoTV = findViewById(R.id.Statistics_timeToday);
-        fechaTV = findViewById(R.id.ViewSingleJourney_dateText);
-        calificacionTV = findViewById(R.id.ViewSingleJourney_ratingText);
-        comentarioTV = findViewById(R.id.ViewSingleJourney_commentText);
-        tituloTV = findViewById(R.id.ViewSingleJourney_titleText);
+        imagenViaje = findViewById(R.id.Imagenviaje);
+        distanciaTV = findViewById(R.id.distanciarecorrido);
+        velocidadPromedioTV = findViewById(R.id.velociadpromedio);
+        tiempoTV = findViewById(R.id.tiemporecorrido);
+        fechaTV = findViewById(R.id.fecharecorrido);
+        calificacionTV = findViewById(R.id.calificacionrecorrido);
+        comentarioTV = findViewById(R.id.comentariosrecorrido);
+        tituloTV = findViewById(R.id.viajeespecificorecorrido);
         caloriasTV = findViewById(R.id.caloriasquemadas);
         pasosTV = findViewById(R.id.pasospromedio);
 
