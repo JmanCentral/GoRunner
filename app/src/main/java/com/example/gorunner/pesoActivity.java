@@ -55,6 +55,8 @@ public class pesoActivity extends AppCompatActivity {
                 editor.putFloat("peso", pesoValue);
                 editor.apply(); // Guardar los cambios
 
+                Toast.makeText(this, "Peso guardado correctamente", Toast.LENGTH_SHORT).show();
+
                 // Redirigir a la actividad principal
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
