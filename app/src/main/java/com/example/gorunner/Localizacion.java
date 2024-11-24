@@ -196,13 +196,12 @@ public class Localizacion extends Service implements SensorEventListener {
 
             getContentResolver().insert(RecorridosObtenidos.uriUbicacion, datosUbicacion);
         }
+        oyenteLocalizacion.grabarUbicaciones = false;
 
-        // Eliminar la notificación
-        NotificationManager gestorNotificaciones = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        gestorNotificaciones.cancel(ID_NOTIFICACION);
+
 
         // Reiniciar el oyente de localización
-        oyenteLocalizacion.grabarUbicaciones = false;
+
         tiempoFin = SystemClock.elapsedRealtime();
         tiempoInicio = 0;
         pasosInicio = 0;
@@ -232,13 +231,16 @@ public class Localizacion extends Service implements SensorEventListener {
         float distancia = obtenerDistancia();
         float d = (float) obtenerDuracion();
 
+        float d1;
         if (d== 0) {
             return 0;
         }
 
         float velocidadPromedio;
 
-        velocidadPromedio =  (distancia / (d / 3600));
+        d1 = d / 3600;
+
+        velocidadPromedio =  distancia/d1;
 
         return velocidadPromedio;
         }

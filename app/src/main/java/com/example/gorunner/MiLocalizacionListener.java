@@ -18,19 +18,21 @@ public class MiLocalizacionListener implements LocationListener {
         grabarUbicaciones = false;
     }
 
+
     // Crea un nuevo recorrido
     public void nuevoRecorrido() {
         ubicaciones = new ArrayList<Location>();
     }
 
-    // Obtiene la distancia recorrida en km
     public float obtenerDistanciaDeRecorrido() {
+
         if(ubicaciones.size() <= 1) {
             return 0;
         }
 
         return ubicaciones.get(0).distanceTo(ubicaciones.get(ubicaciones.size() - 1)) / 1000;
     }
+
 
     // Obtiene la lista de ubicaciones
     public ArrayList<Location> obtenerUbicaciones() {

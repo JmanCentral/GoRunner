@@ -25,8 +25,8 @@ import java.util.Calendar;
 
 public class VerViajes extends ListActivity {
 
+    // Declaración de variables para los elementos de la interfaz
     private CalendarView fecha;
-
     private ListView listaViajes;
     private AdaptadorViaje adaptador;
     private ArrayList<ItemViaje> nombresViajes;
@@ -37,6 +37,7 @@ public class VerViajes extends ListActivity {
         private String uriStr;
         private long id;
 
+        // Getter y setter para el nombre del viaje
         public String getNombre() {
             return nombre;
         }
@@ -45,6 +46,7 @@ public class VerViajes extends ListActivity {
             this.nombre = nombre;
         }
 
+        // Getter y setter para la URI de la imagen del viaje
         public void setUriStr(String uriStr) {
             this.uriStr = uriStr;
         }
@@ -53,6 +55,7 @@ public class VerViajes extends ListActivity {
             return uriStr;
         }
 
+        // Getter y setter para el ID del viaje
         public void setId(long id) {
             this.id = id;
         }
@@ -66,26 +69,31 @@ public class VerViajes extends ListActivity {
     private class AdaptadorViaje extends ArrayAdapter<ItemViaje> {
         private ArrayList<ItemViaje> items;
 
+        // Constructor del adaptador que recibe el contexto, recurso de la vista y los elementos
         public AdaptadorViaje(Context contexto, int recursoTextoVista, ArrayList<ItemViaje> items) {
             super(contexto, recursoTextoVista, items);
             this.items = items;
         }
 
+        // Método para crear o reutilizar las vistas para cada item en el ListView
         @Override
         public View getView(int posicion, View vistaConvertida, ViewGroup padre) {
             View vista = vistaConvertida;
             if (vista == null) {
+                // Inflar la vista si no existe previamente
                 LayoutInflater inflador = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 vista = inflador.inflate(R.layout.lista_recorridos, null);
             }
 
             ItemViaje item = items.get(posicion);
             if (item != null) {
+                // Asignar el nombre del viaje a la vista de texto
                 TextView texto = vista.findViewById(R.id.singleJourney);
                 ImageView img = vista.findViewById(R.id.journeyList_journeyImg);
                 if (texto != null) {
                     texto.setText(item.getNombre());
                 }
+                // Cargar la imagen si se ha proporcionado una URI
                 if (img != null) {
                     String uriStr = item.getUriStr();
                     if (uriStr != null) {
@@ -112,16 +120,19 @@ public class VerViajes extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ver_viajes);
 
+        // Inicialización de la lista de viajes y el adaptador
         nombresViajes = new ArrayList<ItemViaje>();
         adaptador = new AdaptadorViaje(this, R.layout.lista_recorridos, nombresViajes);
         setListAdapter(adaptador);
 
+        // Inicialización del CalendarView y ListView
         fecha = findViewById(R.id.calendarView);
         listaViajes = getListView();
 
+        // Configuración del listener para el cambio de fecha en el CalendarView
         fecha.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
-            // Método para manejar el cambio de fecha
+            // Este método se ejecuta cuando el usuario selecciona un nuevo día en el calendario
             public void onSelectedDayChange(CalendarView vista, int anio, int mes, int diaDelMes) {
                 mes += 1; // los meses empiezan en 0
                 String fechaSeleccionada = String.format("%02d/%02d/%04d", diaDelMes, mes, anio);
@@ -129,6 +140,7 @@ public class VerViajes extends ListActivity {
             }
         });
 
+        // Configuración del listener para el clic en un item de la lista
         listaViajes.setClickable(true);
         listaViajes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -196,6 +208,7 @@ public class VerViajes extends ListActivity {
                 nombresViajes.add(item);
             }
         } finally {
+            // Verificar si hay viajes y agregar al adaptador para mostrarlos en la lista
             if(nombresViajes != null && nombresViajes.size() > 0) {
                 adaptador.notifyDataSetChanged();
                 for(int i = 0; i < nombresViajes.size(); i++) {

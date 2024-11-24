@@ -13,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -29,10 +30,14 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class EditarCarrera extends AppCompatActivity {
+
+    // Constantes para solicitudes de permisos e interacciones con la cámara y almacenamiento.
     private final int RESULTADO_CARGAR_IMAGEN = 1;
     private final int SOLICITUD_CAPTURAR_IMAGEN = 2;
     private final int SOLICITUD_PERMISO_CAMARA = 100;
     private static final int SOLICITUD_PERMISO_ALMACENAMIENTO = 103;
+
+    // Variables para gestionar los elementos de la interfaz y los datos del recorrido.
     private ImageView imagenViaje;
     private EditText tituloET;
     private EditText comentarioET;
@@ -41,6 +46,12 @@ public class EditarCarrera extends AppCompatActivity {
 
     private Uri imagenSeleccionadaViaje;
 
+    /**
+     * Método que se ejecuta al crear la actividad. Inicializa los elementos de la interfaz
+     * y carga la información del recorrido desde la base de datos.
+     *
+     * @param savedInstanceState Estado guardado de la actividad (si existe).
+     */
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,33 +68,64 @@ public class EditarCarrera extends AppCompatActivity {
 
         imagenSeleccionadaViaje = null;
 
+        // Llena los campos con la información existente del recorrido.
         llenarCamposEdicion();
     }
 
     /* Guardar el nuevo título, comentario, imagen y calificación en la base de datos */
     public void Guardar(View v) {
-        int calificacion = verificarCalificacion(calificacionET);
-        if(calificacion == -1) {
-            return;
+        try {
+            // Verificar la calificación antes de continuar.
+            int calificacion = verificarCalificacion(calificacionET);
+            if (calificacion == -1) {
+                Toast.makeText(getApplicationContext(), "Por favor, ingrese una calificación válida.", Toast.LENGTH_SHORT).show();
+                return; // Detiene la ejecución si la calificación no es válida.
+            }
+
+            // Validar campos de texto requeridos.
+            String comentario = comentarioET.getText().toString().trim();
+            String titulo = tituloET.getText().toString().trim();
+            if (comentario.isEmpty() || titulo.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Los campos de comentario y título no pueden estar vacíos.", Toast.LENGTH_SHORT).show();
+                return; // Detiene la ejecución si los campos están vacíos.
+            }
+
+            Uri uriConsultaFila = Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido, String.valueOf(idViaje));
+
+            // Crear un objeto ContentValues para actualizar la base de datos.
+            ContentValues valores = new ContentValues();
+            valores.put(RecorridosObtenidos.calificacion_recorrido, calificacion);
+            valores.put(RecorridosObtenidos.comentario_recorrido, comentario);
+            valores.put(RecorridosObtenidos.nombre_recorrido, titulo);
+
+            // Verificar si hay una imagen seleccionada y añadirla.
+            if (imagenSeleccionadaViaje != null) {
+                valores.put(RecorridosObtenidos.imagen_recorrido, imagenSeleccionadaViaje.toString());
+            }
+
+            // Realizar la actualización en la base de datos.
+            int filasActualizadas = getContentResolver().update(uriConsultaFila, valores, null, null);
+            if (filasActualizadas > 0) {
+                Toast.makeText(getApplicationContext(), "El recorrido se ha guardado correctamente.", Toast.LENGTH_SHORT).show();
+                finish(); // Finaliza la actividad si todo fue exitoso.
+            } else {
+                Toast.makeText(getApplicationContext(), "No se encontró el recorrido para actualizar.", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IllegalArgumentException e) {
+            // Captura problemas con argumentos no válidos.
+            Toast.makeText(getApplicationContext(), "Error en los datos ingresados: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch (SQLiteException e) {
+            // Captura problemas específicos de la base de datos.
+            Toast.makeText(getApplicationContext(), "Error al guardar en la base de datos: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            // Captura cualquier otra excepción no prevista.
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), "Ocurrió un error inesperado.", Toast.LENGTH_SHORT).show();
         }
-
-        Uri uriConsultaFila = Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido, "" + idViaje);
-
-        ContentValues valores = new ContentValues();
-        valores.put(RecorridosObtenidos.calificacion_recorrido, calificacion);
-        valores.put(RecorridosObtenidos.comentario_recorrido, comentarioET.getText().toString());
-        valores.put(RecorridosObtenidos.nombre_recorrido, tituloET.getText().toString());
-
-        if(imagenSeleccionadaViaje != null) {
-            valores.put(RecorridosObtenidos.imagen_recorrido, imagenSeleccionadaViaje.toString());
-        }
-
-        getContentResolver().update(uriConsultaFila, valores, null, null);
-
-        Toast.makeText(getApplicationContext(), "El recorrido se ha guardado  correctamente", Toast.LENGTH_SHORT).show();
-        finish();
     }
 
+
+    // Muestra un diálogo para seleccionar la imagen desde la cámara o el almacenamiento.
     private void mostrarDialogoSeleccionImagen() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Seleccionar imagen");
@@ -108,6 +150,9 @@ public class EditarCarrera extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Verifica si se tiene permiso para acceder al almacenamiento externo. Si no, solicita el permiso.
+     */
     private void verificarPermisoAlmacenamiento() {
         // Verificar si el permiso de almacenamiento ha sido concedido
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -122,13 +167,19 @@ public class EditarCarrera extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Abre el selector de imágenes del almacenamiento externo.
+     */
     private void abrirAlmacenamiento() {
         Intent intentSeleccionarImagen = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intentSeleccionarImagen.setType("image/*");
         startActivityForResult(intentSeleccionarImagen, RESULTADO_CARGAR_IMAGEN);
     }
 
-
+    /**
+     * Verifica si se tiene permiso para usar la cámara. Si no, solicita el permiso.
+     */
 
     private void verificarPermisoCamara() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -165,16 +216,22 @@ public class EditarCarrera extends AppCompatActivity {
     }
 
 
+    /**
+     * Abre la cámara para capturar una imagen.
+     */
     private void abrirCamara() {
         Intent intentCapturarImagen = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             startActivityForResult(intentCapturarImagen, SOLICITUD_CAPTURAR_IMAGEN);
     }
 
-
+    // Muestra el diálogo para seleccionar la imagen
     public void CambiarImagen(View v) {
         mostrarDialogoSeleccionImagen();
     }
 
+    /**
+     * Maneja los resultados de las actividades para seleccionar o capturar imágenes.
+     */
     @Override
     protected void onActivityResult(int codigoSolicitud, int codigoResultado, Intent data) {
         super.onActivityResult(codigoSolicitud, codigoResultado, data);
@@ -267,6 +324,7 @@ public class EditarCarrera extends AppCompatActivity {
         }
     }
 
+    // Verifica si la calificación es válida y si no , no lo deja actualizar la carrera
     private int verificarCalificacion(EditText nuevaCalificacion) {
         int calificacion;
         try {

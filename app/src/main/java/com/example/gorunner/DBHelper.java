@@ -11,7 +11,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // Constructor que llama al constructor de SQLiteOpenHelper con el nombre de la base de datos y la versión.
     public DBHelper(Context context) {
-        super(context, "GoRunner", null, 1); // Nombre de la base de datos: "GoRunner", versión: 1.
+        super(context, "GoRunnerBase", null, 1); // Nombre de la base de datos: "GoRunner", versión: 1.
     }
 
     // Método que se ejecuta cuando se crea la base de datos.

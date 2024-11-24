@@ -32,52 +32,60 @@ import android.widget.Toast;
 
 public class Viajes extends AppCompatActivity {
 
-        // Clase para manejar el servicio de ubicación
-        private GifPlayer gif;
-        private Localizacion.EnlaceServicioLocalizacion locationService;
+        // Variables para manejar el servicio de ubicación y los elementos de la UI
+        private GifPlayer gif;// GIF animado que representa al atleta
+        private Localizacion.EnlaceServicioLocalizacion locationService; // Enlace al servicio de localización
 
-        private TextView distanciaTexto;
-        private TextView velocidadPromedioTexto;
-        private TextView duracionTexto;
-        private TextView caloriasPromedio;
-        private TextView pasosTotales;
+        private TextView distanciaTexto; // TextView para mostrar la distancia
+        private TextView velocidadPromedioTexto; // TextView para mostrar la velocidad promedio
+        private TextView duracionTexto; // TextView para mostrar la duración
+        private TextView caloriasPromedio;  // TextView para mostrar las calorías quemadas
+        private TextView pasosTotales; // TextView para mostrar los pasos totales
 
-        private Button botonIniciar;
-        private Button botonDetener;
-        private static final int PERMISSION_GPS_CODE = 1;
-        private static final int PERMISSION_ACTIVITY_RECOGNITION_CODE = 2;
+        private Button botonIniciar; // Botón para iniciar el recorrido
+        private Button botonDetener; // Botón para detener el recorrido
+        private static final int PERMISSION_GPS_CODE = 1; // Código para el permiso de GPS
+        private static final int PERMISSION_ACTIVITY_RECOGNITION_CODE = 2; // Código para el permiso de reconocimiento de actividad
 
-        // Clase para manejar el servicio de ubicación
+        // Método onCreate llamado cuando la actividad es creada
         @SuppressLint("MissingInflatedId")
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_viajes);
 
+            // Verificar si la ubicación está habilitada
             if (!isLocationEnabled()) {
-                showLocationDisabledAlert();
+                showLocationDisabledAlert(); // Muestra un alerta si la ubicación está desactivada
             }
 
+            // Inicialización del GIF que representa al atleta
             gif = findViewById(R.id.gif);
-            gif.setGifImageResource(R.drawable.atleta32);
-            gif.pausar();
+            gif.setGifImageResource(R.drawable.atleta32);// Establece el recurso GIF
+            gif.pausar();  // Pausa la animación inicialmente
 
+            // Inicialización de las TextViews para mostrar los datos
             distanciaTexto = findViewById(R.id.distancia);
             duracionTexto = findViewById(R.id.duracion);
             velocidadPromedioTexto = findViewById(R.id.velocidadpromedio);
             caloriasPromedio = findViewById(R.id.calorias);
             pasosTotales = findViewById(R.id.pasos);
 
+            // Inicialización de los botones de inicio y detención
             botonIniciar = findViewById(R.id.iniciar);
             botonDetener = findViewById(R.id.detener);
 
+            // Deshabilitar el botón de detener y de iniciar al principio
             botonDetener.setEnabled(false);
             botonIniciar.setEnabled(false);
 
-
+            // Manejo de permisos de ubicación y actividad
             handlePermissions();
 
+            // Inicia el servicio de localizació
             startService(new Intent(this, Localizacion.class));
+
+            // Vincula el servicio de localización a la actividad
             bindService(
                     new Intent(this, Localizacion.class), lsc, Context.BIND_AUTO_CREATE);
         }
@@ -112,20 +120,23 @@ public class Viajes extends AppCompatActivity {
                             long minutos = (duracion % 3600) / 60;
                             long segundos = duracion % 60;
 
+                            // Obtener la velocidad promedio
                             float velocidadPromedio = locationService.obtenerVelocidadPromedio();
 
-
+                            // Recuperar el peso del usuario desde las preferencias
                             SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
                             float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
 
                             // Calcular calorías usando el método del servicio
                             float caloriasQuemadas = locationService.obtenerCalorias(pesoRecuperado);
 
+                            // Formatear los datos para mostrar en la UI
                             final String tiempo = String.format("%02d:%02d:%02d", horas, minutos, segundos);
                             final String dist = String.format("%.2f KM", distancia);
                             final String promedio = String.format("%.2f KM/H", velocidadPromedio);
                             final String calorias = String.format("%.2f CAL", caloriasQuemadas);
 
+                            // Actualizar la UI con los nuevos valores
                             postBack.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -140,6 +151,7 @@ public class Viajes extends AppCompatActivity {
                             });
 
                             try {
+                                // Pausar el hilo por 500ms antes de actualizar de nuevo
                                 Thread.sleep(500);
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -181,6 +193,7 @@ public class Viajes extends AppCompatActivity {
 
     // Manejar el botón de iniciar
     public void Inicio(View view) {
+        // Recuperar el peso del usuario desde las preferencias compartidas
         SharedPreferences sharedPreferences = getSharedPreferences("PreferenciasUsuario", MODE_PRIVATE);
         float pesoRecuperado = sharedPreferences.getFloat("peso", 0.0f);
 
@@ -197,23 +210,30 @@ public class Viajes extends AppCompatActivity {
             alertDialogBuilder.create().show();
         }
         else {
+
             gif.reproducir();
             // Iniciar el temporizador y el rastreo de ubicaciones GPS
-            locationService.iniciarRecorrido();
-            botonIniciar.setEnabled(false);
-            botonDetener.setEnabled(true);
+            locationService.iniciarRecorrido(); // Iniciar el rastreo de la ubicación
+            botonIniciar.setEnabled(false); // Deshabilitar el botón de iniciar
+            botonDetener.setEnabled(true);  // Habilitar el botón de detener
         }
     }
 
     // Manejar el botón de detener
     public void Fin(View view) {
+        // Obtener la distancia recorrida
         float distancia = locationService.obtenerDistancia();
+        // Guardar el recorrido
         locationService.guardarRecorrido();
 
+        // Deshabilitar ambos botones al finalizar el recorrido
         botonIniciar.setEnabled(false);
         botonDetener.setEnabled(false);
 
+        // Pausar la animación
         gif.pausar();
+
+        // Mostrar un diálogo con el resumen del viaje
 
         DialogFragment modal = FinishedTrackingDialogue.newInstance(String.format("%.2f KM", distancia));
         modal.show(getSupportFragmentManager(), "Finished");

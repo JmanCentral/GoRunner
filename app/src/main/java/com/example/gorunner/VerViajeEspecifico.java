@@ -18,6 +18,8 @@ import android.widget.TextView;
 import java.io.InputStream;
 
 public class VerViajeEspecifico extends AppCompatActivity {
+
+    // Definición de vistas para mostrar los detalles del viaje
     private ImageView imagenViaje;
     private TextView distanciaTV;
     private TextView velocidadPromedioTV;
@@ -29,8 +31,10 @@ public class VerViajeEspecifico extends AppCompatActivity {
     private TextView caloriasTV;
     private TextView pasosTV;
 
+    // Identificador único del viaje a mostrar
     private long idViaje;
 
+    // Manejador para el ContentObserver
     private Handler manejador = new Handler();
 
     // Clase interna para observar cambios en la base de datos
@@ -61,8 +65,10 @@ public class VerViajeEspecifico extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ver_viaje_especifico);
 
+        // Obtener los datos del Intent
         Bundle bundle = getIntent().getExtras();
 
+        // Inicialización de las vistas (TextViews e ImageView)
         imagenViaje = findViewById(R.id.Imagenviaje);
         distanciaTV = findViewById(R.id.distanciarecorrido);
         velocidadPromedioTV = findViewById(R.id.velociadpromedio);
@@ -74,10 +80,12 @@ public class VerViajeEspecifico extends AppCompatActivity {
         caloriasTV = findViewById(R.id.caloriasquemadas);
         pasosTV = findViewById(R.id.pasospromedio);
 
+        // Obtener el ID del viaje desde el Bundle
         idViaje = bundle.getLong("idViaje");
 
-
+        // Llenar la vista con los datos del viaje
         llenarVista();
+        // Registrar un ContentObserver para observar cambios en los datos
         getContentResolver().registerContentObserver(
                 RecorridosObtenidos.todas, true, new MiObservador(manejador));
     }
@@ -116,7 +124,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
         Cursor c = getContentResolver().query(Uri.withAppendedPath(RecorridosObtenidos.uriRecorrido,
                 idViaje + ""), null, null, null, null);
 
-        // Mostrar los datos en la vista
+        // Si la consulta tiene resultados, llenar los elementos de la vista
         if (c.moveToFirst()) {
             double distancia = c.getDouble(c.getColumnIndex(RecorridosObtenidos.distancia_recorrido));
             long tiempo = c.getLong(c.getColumnIndex(RecorridosObtenidos.duracion_recorrido));
@@ -124,10 +132,12 @@ public class VerViajeEspecifico extends AppCompatActivity {
             int pasos = c.getInt(c.getColumnIndex(RecorridosObtenidos.pasos_recorrido));
             float velocidadPromedio = c.getFloat(c.getColumnIndex(RecorridosObtenidos.velocidad_recorrido));
 
+            // Calcular las horas, minutos y segundos a partir del tiempo en segundos
             long horas = tiempo / 3600;
             long minutos = (tiempo % 3600) / 60;
             long segundos = tiempo % 60;
 
+            // Establecer los valores en los TextViews correspondientes
             distanciaTV.setText(String.format("%.2f KM", distancia));
             velocidadPromedioTV.setText(String.format("%.2f KM/H", velocidadPromedio));
             tiempoTV.setText(String.format("%02d:%02d:%02d", horas, minutos, segundos));
@@ -140,6 +150,7 @@ public class VerViajeEspecifico extends AppCompatActivity {
             fecha = partesFecha[2] + "/" + partesFecha[1] + "/" + partesFecha[0];
 
             fechaTV.setText(fecha);
+            // Mostrar la calificación, comentario y título del recorrido
             calificacionTV.setText(c.getInt(c.getColumnIndex(RecorridosObtenidos.calificacion_recorrido)) + "");
             comentarioTV.setText(c.getString(c.getColumnIndex(RecorridosObtenidos.comentario_recorrido)));
             tituloTV.setText(c.getString(c.getColumnIndex(RecorridosObtenidos.nombre_recorrido)));
