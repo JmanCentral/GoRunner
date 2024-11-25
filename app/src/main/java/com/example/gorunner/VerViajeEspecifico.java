@@ -163,7 +163,9 @@ public class VerViajeEspecifico extends AppCompatActivity {
                     final Uri imagenUri = Uri.parse(uriStr);
                     final InputStream flujoImagen = getContentResolver().openInputStream(imagenUri);
                     final Bitmap imagenSeleccionada = BitmapFactory.decodeStream(flujoImagen);
-                    imagenViaje.setImageBitmap(imagenSeleccionada);
+                    Bitmap imagenRedimensionada = Bitmap.createScaledBitmap(imagenSeleccionada, 800, 800, true);
+
+                    imagenViaje.setImageBitmap(imagenRedimensionada);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
