@@ -91,7 +91,7 @@ public class Localizacion extends Service implements SensorEventListener {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent intentoPendiente = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Builder constructorNotificacion = new NotificationCompat.Builder(this, ID_CANAL)
-                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setSmallIcon(R.drawable.corredor)
                 .setContentTitle("Rastreo de Recorrido")
                 .setContentText("¡Sigue corriendo!")
                 .setContentIntent(intentoPendiente)

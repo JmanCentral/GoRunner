@@ -86,7 +86,7 @@ public class EditarCarrera extends AppCompatActivity {
             String comentario = comentarioET.getText().toString().trim();
             String titulo = tituloET.getText().toString().trim();
             if (comentario.isEmpty() || titulo.isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Los campos de comentario y título no pueden estar vacíos.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Los campos  no pueden estar vacíos.", Toast.LENGTH_SHORT).show();
                 return; // Detiene la ejecución si los campos están vacíos.
             }
 

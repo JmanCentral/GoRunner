@@ -15,12 +15,15 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.github.chrisbanes.photoview.PhotoView;
+
 import java.io.InputStream;
 
 public class VerViajeEspecifico extends AppCompatActivity {
 
     // Definición de vistas para mostrar los detalles del viaje
-    private ImageView imagenViaje;
+
+    private PhotoView imagenViaje;
     private TextView distanciaTV;
     private TextView velocidadPromedioTV;
     private TextView tiempoTV;
@@ -160,12 +163,15 @@ public class VerViajeEspecifico extends AppCompatActivity {
             String uriStr = c.getString(c.getColumnIndex(RecorridosObtenidos.imagen_recorrido));
             if (uriStr != null) {
                 try {
+
                     final Uri imagenUri = Uri.parse(uriStr);
                     final InputStream flujoImagen = getContentResolver().openInputStream(imagenUri);
                     final Bitmap imagenSeleccionada = BitmapFactory.decodeStream(flujoImagen);
-                    Bitmap imagenRedimensionada = Bitmap.createScaledBitmap(imagenSeleccionada, 800, 800, true);
+                    final Bitmap imagenRedimensionada = Bitmap.createScaledBitmap(imagenSeleccionada, 800, 800, true);
 
                     imagenViaje.setImageBitmap(imagenRedimensionada);
+                    imagenViaje.setMaximumScale(5.0f); // 5x zoom máximo
+                    imagenViaje.setMinimumScale(1.0f); // 1x zoom mínimo
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

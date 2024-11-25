@@ -168,7 +168,7 @@
                 android:layout_weight="1"
                 android:background="#0f4d8b"
                 android:onClick="Fin"
-                android:text="FINAL"
+                android:text="FIN"
                 android:textColor="#FFFFFF" />
         </LinearLayout>
 

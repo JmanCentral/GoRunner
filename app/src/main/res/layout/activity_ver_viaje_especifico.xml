@@ -24,10 +24,12 @@
                 android:text="Viaje específico"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textColor="#0f4d8b"
+                android:textSize="25sp"
+                android:textStyle="bold|italic"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:layout_editor_absoluteX="0dp" />
 
-            <ImageView
+            <com.github.chrisbanes.photoview.PhotoView
                 android:id="@+id/Imagenviaje"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -224,8 +226,8 @@
 
             <TextView
                 android:id="@+id/textView11"
-                android:layout_width="113dp"
-                android:layout_height="22dp"
+                android:layout_width="138dp"
+                android:layout_height="25dp"
                 android:layout_marginTop="16dp"
                 android:text="Comentarios"
                 android:textColor="#0f4d8b"
