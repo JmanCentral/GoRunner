@@ -22,6 +22,7 @@
             android:layout_toRightOf="@+id/journeyList_journeyImg"
             android:text="234"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+            android:textColor="#0f4d8b"
             android:textSize="24sp" />
 
         <ImageView

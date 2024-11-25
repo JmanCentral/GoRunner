@@ -25,6 +25,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -271,17 +274,46 @@ public class EditarCarrera extends AppCompatActivity {
                     Bundle extras = data.getExtras();
                     Bitmap imagenBitmap = (Bitmap) extras.get("data");
 
+                    imagenBitmap = imagenBitmap.copy(Bitmap.Config.ARGB_8888, true);
+
                     // Redimensionar el Bitmap
                     Bitmap imagenRedimensionada = Bitmap.createScaledBitmap(imagenBitmap, 800, 800, true);
 
+                    imagenRedimensionada = aplicarFiltroNitidez(imagenRedimensionada);
+
                     imagenViaje.setImageBitmap(imagenRedimensionada);
 
-                    // Opcional: Guardar la imagen redimensionada en almacenamiento
                     imagenSeleccionadaViaje = guardarImagenEnAlmacenamiento(imagenRedimensionada);
                     break;
             }
         }
     }
+
+    private Bitmap aplicarFiltroNitidez(Bitmap bitmap) {
+        Bitmap bitmapSalida = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
+
+        float[] matrizNitidez = {
+                0, -1, 0,
+                -1, 5, -1,
+                0, -1, 0
+        };
+
+        android.renderscript.RenderScript rs = android.renderscript.RenderScript.create(this);
+        android.renderscript.Allocation input = android.renderscript.Allocation.createFromBitmap(rs, bitmap);
+        android.renderscript.Allocation output = android.renderscript.Allocation.createFromBitmap(rs, bitmapSalida);
+
+        android.renderscript.ScriptIntrinsicConvolve3x3 convolve =
+                android.renderscript.ScriptIntrinsicConvolve3x3.create(rs, android.renderscript.Element.U8_4(rs));
+        convolve.setInput(input);
+        convolve.setCoefficients(matrizNitidez);
+        convolve.forEach(output);
+
+        output.copyTo(bitmapSalida);
+        rs.destroy();
+
+        return bitmapSalida;
+    }
+
 
     // Método para guardar la imagen en almacenamiento y obtener el URI
     private Uri guardarImagenEnAlmacenamiento(Bitmap bitmap) {
